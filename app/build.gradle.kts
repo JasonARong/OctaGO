@@ -34,6 +34,10 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
@@ -54,12 +58,25 @@ dependencies {
     // Coroutines
     implementation(libs.kotlin.coroutines.android)
 
+    // CameraX
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.exifinterface)
+
+    // Lifecycle
+    implementation(libs.lifecycle.viewmodel.ktx)
+    implementation(libs.lifecycle.livedata.ktx)
+
+    // Fragment
+    implementation(libs.androidx.fragment.ktx)
+
+    // Flexbox
+    implementation(libs.flexbox)
+
     // Feature Modules
     implementation(project(":core"))
-    implementation(project(":feature_camera"))
-    implementation(project(":feature_process"))
-    implementation(project(":feature_preview"))
-    implementation(project(":feature_gallery"))
-
     implementation(project(":opencv"))
 }

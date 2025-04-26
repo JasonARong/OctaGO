@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">OctaGO</string>
+    <string name="back_btn">Back</string>
+    <string name="map_btn">Map</string>
+    <string name="download_btn">Download</string>
+    <string name="more_options_btn">More Options</string>
+    <string name="like_btn">Like</string>
+    <string name="add_to_folder_btn">Add to Folder</string>
+    <string name="name_your_material">Name Your Material</string>
+
 </resources>

@@ -1,0 +1,570 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dark_blue_a20">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/section_guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_end="300dp" />
+
+    <!--=================== Left Preview Section ===================-->
+    <ImageButton
+        android:id="@+id/back_btn"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="@dimen/gap_large"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/round_background"
+        android:src="@drawable/chevron_icon"
+        app:tint="@color/light_grey"
+        android:contentDescription="@string/back_btn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:maxWidth="250dp"
+        android:minWidth="50dp"
+        android:layout_marginStart="@dimen/gap_medium"
+        android:layout_marginTop="16dp"
+        android:paddingHorizontal="@dimen/gap_medium"
+        android:background="@drawable/rounded_background"
+        android:backgroundTint="@color/dark_blue_a0"
+        android:inputType="text"
+        android:hint="Name your texture"
+        android:textColorHint="@color/light_grey"
+        android:textColor="@color/white"
+        android:textSize="@dimen/text_size_medium"
+        app:layout_constraintStart_toEndOf="@+id/back_btn"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.helper.widget.Flow
+        android:id="@+id/two_btn_flow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/gap_medium"
+        android:background="@drawable/round_background"
+        android:paddingHorizontal="@dimen/gap_small"
+        app:constraint_referenced_ids="map_btn,download_btn"
+        app:flow_horizontalGap="@dimen/gap_small"
+        app:layout_constraintBottom_toBottomOf="@+id/more_options_btn"
+        app:layout_constraintEnd_toStartOf="@+id/more_options_btn"
+        app:layout_constraintTop_toTopOf="@+id/more_options_btn" />
+    <ImageButton
+        android:id="@+id/map_btn"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@android:color/transparent"
+        android:scaleType="centerInside"
+        android:src="@drawable/map_marker"
+        app:tint="@color/light_grey"
+        android:contentDescription="@string/map_btn"/>
+    <ImageButton
+        android:id="@+id/download_btn"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="@dimen/gap_large"
+        android:background="@android:color/transparent"
+        android:scaleType="centerInside"
+        android:src="@drawable/download"
+        app:tint="@color/light_grey"
+        android:contentDescription="@string/download_btn"/>
+
+    <ImageButton
+        android:id="@+id/more_options_btn"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="@dimen/gap_large"
+        android:background="@drawable/round_background"
+        android:src="@drawable/dots_horizontal"
+        app:layout_constraintEnd_toStartOf="@+id/section_guideline"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/light_grey"
+        android:contentDescription="@string/more_options_btn"/>
+
+    <GridLayout
+        android:id="@+id/gridLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/gap_large"
+        android:layout_marginEnd="@dimen/gap_large"
+        android:layout_marginBottom="@dimen/gap_small"
+        android:columnCount="4"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/section_guideline"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/back_btn">
+
+        <!-- Item 01 -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="@dimen/gap_tiny">
+
+            <ImageView
+                android:id="@+id/image01"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_launcher_background"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/num01"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="01"
+                android:textColor="@color/grey"
+                android:textSize="@dimen/text_size_small"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@id/image01"
+                app:layout_constraintTop_toBottomOf="@id/image01" />
+
+            <TextView
+                android:id="@+id/pos01"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/gap_tiny"
+                android:text="RIGHT"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_size_small"
+                app:layout_constraintBottom_toBottomOf="@id/num01"
+                app:layout_constraintStart_toEndOf="@id/num01"
+                app:layout_constraintTop_toTopOf="@id/num01" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Item 02 -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="@dimen/gap_tiny">
+
+            <ImageView
+                android:id="@+id/image02"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_launcher_background"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/num02"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="02"
+                android:textColor="@color/grey"
+                android:textSize="@dimen/text_size_small"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@id/image02"
+                app:layout_constraintTop_toBottomOf="@id/image02" />
+
+            <TextView
+                android:id="@+id/pos02"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/gap_tiny"
+                android:text="RIGHT"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_size_small"
+                app:layout_constraintBottom_toBottomOf="@id/num02"
+                app:layout_constraintStart_toEndOf="@id/num02"
+                app:layout_constraintTop_toTopOf="@id/num02" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Item 03 -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="@dimen/gap_tiny">
+
+            <ImageView
+                android:id="@+id/image03"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_launcher_background"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/num03"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="03"
+                android:textColor="@color/grey"
+                android:textSize="@dimen/text_size_small"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@id/image03"
+                app:layout_constraintTop_toBottomOf="@id/image03" />
+
+            <TextView
+                android:id="@+id/pos03"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/gap_tiny"
+                android:text="RIGHT"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_size_small"
+                app:layout_constraintBottom_toBottomOf="@id/num03"
+                app:layout_constraintStart_toEndOf="@id/num03"
+                app:layout_constraintTop_toTopOf="@id/num03" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Item 04 -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="@dimen/gap_tiny">
+
+            <ImageView
+                android:id="@+id/image04"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_launcher_background"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/num04"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="04"
+                android:textColor="@color/grey"
+                android:textSize="@dimen/text_size_small"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@id/image04"
+                app:layout_constraintTop_toBottomOf="@id/image04" />
+
+            <TextView
+                android:id="@+id/pos04"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/gap_tiny"
+                android:text="RIGHT"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_size_small"
+                app:layout_constraintBottom_toBottomOf="@id/num04"
+                app:layout_constraintStart_toEndOf="@id/num04"
+                app:layout_constraintTop_toTopOf="@id/num04" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Item 05 -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="@dimen/gap_tiny">
+
+            <ImageView
+                android:id="@+id/image05"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_launcher_background"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/num05"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="05"
+                android:textColor="@color/grey"
+                android:textSize="@dimen/text_size_small"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@id/image05"
+                app:layout_constraintTop_toBottomOf="@id/image05" />
+
+            <TextView
+                android:id="@+id/pos05"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/gap_tiny"
+                android:text="RIGHT"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_size_small"
+                app:layout_constraintBottom_toBottomOf="@id/num05"
+                app:layout_constraintStart_toEndOf="@id/num05"
+                app:layout_constraintTop_toTopOf="@id/num05" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Item 06 -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="@dimen/gap_tiny">
+
+            <ImageView
+                android:id="@+id/image06"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_launcher_background"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/num06"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="06"
+                android:textColor="@color/grey"
+                android:textSize="@dimen/text_size_small"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@id/image06"
+                app:layout_constraintTop_toBottomOf="@id/image06" />
+
+            <TextView
+                android:id="@+id/pos06"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/gap_tiny"
+                android:text="RIGHT"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_size_small"
+                app:layout_constraintBottom_toBottomOf="@id/num06"
+                app:layout_constraintStart_toEndOf="@id/num06"
+                app:layout_constraintTop_toTopOf="@id/num06" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Item 07 -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="@dimen/gap_tiny">
+
+            <ImageView
+                android:id="@+id/image07"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_launcher_background"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/num07"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="07"
+                android:textColor="@color/grey"
+                android:textSize="@dimen/text_size_small"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@id/image07"
+                app:layout_constraintTop_toBottomOf="@id/image07" />
+
+            <TextView
+                android:id="@+id/pos07"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/gap_tiny"
+                android:text="RIGHT"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_size_small"
+                app:layout_constraintBottom_toBottomOf="@id/num07"
+                app:layout_constraintStart_toEndOf="@id/num07"
+                app:layout_constraintTop_toTopOf="@id/num07" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Item 08 -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="@dimen/gap_tiny">
+
+            <ImageView
+                android:id="@+id/image08"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_launcher_background"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/num08"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="08"
+                android:textColor="@color/grey"
+                android:textSize="@dimen/text_size_small"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@id/image08"
+                app:layout_constraintTop_toBottomOf="@id/image08" />
+
+            <TextView
+                android:id="@+id/pos08"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/gap_tiny"
+                android:text="RIGHT"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_size_small"
+                app:layout_constraintBottom_toBottomOf="@id/num08"
+                app:layout_constraintStart_toEndOf="@id/num08"
+                app:layout_constraintTop_toTopOf="@id/num08" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </GridLayout>
+
+
+
+    <!--=================== Right Process Section ===================-->
+    <TextView
+        android:id="@+id/process"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/gap_large"
+        android:layout_marginTop="20dp"
+        android:text="PROCESS"
+        android:textColor="@color/white"
+        android:textSize="@dimen/text_size_large"
+        app:layout_constraintStart_toStartOf="@+id/section_guideline"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="0dp"
+        android:layout_height="88dp"
+        android:layout_marginStart="@dimen/gap_large"
+        android:layout_marginEnd="@dimen/gap_large"
+        android:background="@drawable/rounded_background"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/section_guideline"
+        app:layout_constraintTop_toTopOf="@+id/gridLayout">
+
+        <RadioButton
+            android:id="@+id/fast"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:button="@null"
+            android:gravity="center"
+            android:background="@drawable/process_options_selector"
+
+            android:drawableTop="@drawable/fast"
+            android:drawableTint="@drawable/process_options_content_selector"
+            android:paddingTop="@dimen/gap_large"
+            android:text="FAST"
+            android:textColor="@drawable/process_options_content_selector"
+            android:textSize="@dimen/text_size_small" />
+
+        <RadioButton
+            android:id="@+id/balanced"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:button="@null"
+            android:checked="true"
+            android:gravity="center"
+            android:background="@drawable/process_options_selector"
+
+            android:drawableTop="@drawable/balanced"
+            android:drawableTint="@drawable/process_options_content_selector"
+            android:paddingTop="@dimen/gap_large"
+            android:text="BALANCED"
+            android:textColor="@drawable/process_options_content_selector"
+            android:textSize="@dimen/text_size_small" />
+
+        <RadioButton
+            android:id="@+id/quality"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:button="@null"
+            android:gravity="center"
+            android:background="@drawable/process_options_selector"
+
+            android:drawableTop="@drawable/quality"
+            android:drawableTint="@drawable/process_options_content_selector"
+            android:paddingTop="@dimen/gap_large"
+            android:text="QUALITY"
+            android:textColor="@drawable/process_options_content_selector"
+            android:textSize="@dimen/text_size_small" />
+
+    </RadioGroup>
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/gap_small"
+        android:background="@drawable/rounded_background"
+        android:padding="@dimen/gap_medium"
+        android:text="Advance Settings"
+        android:textColor="@color/white"
+        android:textSize="@dimen/text_size_medium"
+        app:layout_constraintEnd_toEndOf="@+id/radioGroup"
+        app:layout_constraintStart_toStartOf="@+id/radioGroup"
+        app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
+
+    <androidx.constraintlayout.helper.widget.Flow
+        android:id="@+id/process_button_flow"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/gap_large"
+        android:layout_marginEnd="@dimen/gap_large"
+        android:layout_marginBottom="16dp"
+        app:flow_wrapMode="chain"
+        app:constraint_referenced_ids="skipBtn,processBtn"
+        app:flow_horizontalGap="@dimen/gap_small"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/section_guideline" />
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/skipBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/dark_blue_a0"
+        android:text="SKIP"
+        android:textSize="@dimen/text_size_large"
+        android:textColor="@color/white"
+        android:padding="@dimen/gap_medium"
+        app:cornerRadius="8dp"/>
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/processBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/dark_blue_a0"
+        android:text="PROCESS"
+        android:textSize="@dimen/text_size_large"
+        android:textColor="@color/green"
+        android:padding="@dimen/gap_medium"
+        app:cornerRadius="8dp"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/cameraFragment">
 
     <fragment
         android:id="@+id/cameraFragment"
-        android:name="com.yason.feature_camera.CameraFragment"
-        android:label="Camera" >
+        android:name="com.yason.octago.camera.CameraFragment"
+        android:label="Camera"
+        tools:layout="@layout/fragment_camera">
         <action
             android:id="@+id/action_cameraFragment_to_processFragment"
             app:destination="@id/processFragment" />
@@ -15,11 +17,12 @@
 
     <fragment
         android:id="@+id/processFragment"
-        android:name="com.yason.feature_process.ProcessFragment"
-        android:label="Process" >
+        android:name="com.yason.octago.process.ProcessFragment"
+        android:label="Process"
+        tools:layout="@layout/fragment_process">
         <deepLink app:uri="android-app://com.yason.app/process_fragment" />
         <argument
-            android:name="imagePath"
+            android:name="imagePaths"
             app:argType="string[]"
             app:nullable="true"
             android:defaultValue="@null" />

@@ -13,7 +13,7 @@ import kotlin.math.sqrt
 
 class MaterialMapGenerator (
     private val images: List<Mat>,
-    private val lightDirectionsUnnormalized: Array<FloatArray>,
+    private val lightDirectionsUnnormalized: List<FloatArray>,
     private val imageNumber: Int = 8
 ){
     init {
