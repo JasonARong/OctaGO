@@ -76,6 +76,9 @@ dependencies {
     // Flexbox
     implementation(libs.flexbox)
 
+    // WebSockets
+//    implementation(libs.java.websocket)
+
     // Feature Modules
     implementation(project(":core"))
     implementation(project(":opencv"))

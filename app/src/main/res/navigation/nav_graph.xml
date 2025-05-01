@@ -12,7 +12,8 @@
         tools:layout="@layout/fragment_camera">
         <action
             android:id="@+id/action_cameraFragment_to_processFragment"
-            app:destination="@id/processFragment" />
+            app:destination="@id/processFragment"
+            app:enterAnim="@android:anim/fade_in" />
     </fragment>
 
     <fragment
@@ -23,6 +24,23 @@
         <deepLink app:uri="android-app://com.yason.app/process_fragment" />
         <argument
             android:name="imagePaths"
+            app:argType="string[]"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <action
+            android:id="@+id/action_processFragment_to_previewFragment"
+            app:destination="@id/previewFragment"
+            app:enterAnim="@android:anim/fade_in" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/previewFragment"
+        android:name="com.yason.octago.preview.PreviewFragment"
+        android:label="Preview"
+        tools:layout="@layout/fragment_preview">
+
+        <argument
+            android:name="processedImagePaths"
             app:argType="string[]"
             app:nullable="true"
             android:defaultValue="@null" />

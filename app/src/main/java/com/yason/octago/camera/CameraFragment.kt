@@ -19,6 +19,8 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 import android.Manifest
+import android.annotation.SuppressLint
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Environment
@@ -27,11 +29,14 @@ import android.view.Surface
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 import androidx.navigation.fragment.findNavController
 import com.yason.octago.databinding.FragmentCameraBinding
+import java.io.InputStream
+import java.io.OutputStream
 
 
 class CameraFragment : Fragment() {
@@ -39,6 +44,7 @@ class CameraFragment : Fragment() {
     private var _binding: FragmentCameraBinding? = null // FragmentCameraBinding generated from fragment_camera.xml
     private val binding get() = _binding!! // non-nullable version of _binding
 
+    // Camera
     private val viewModel: CameraViewModel by viewModels()
     private var imageCapture: ImageCapture? = null // CameraX ImageCapture object
 
@@ -58,57 +64,122 @@ class CameraFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if (allPermissionsGranted()) {
-            Log.d("CameraFragment", "Permissions already granted, starting camera")
+
+        var missingPermissions = false
+
+        // Start camera if the permissions are granted
+        if (allCameraPermissionsGranted()) {
             startCamera()
         } else {
-            Log.d("CameraFragment", "Requesting permissions")
-            requestPermissionLauncher.launch(REQUIRED_PERMISSIONS)
+            Log.d("CameraFragment", "Missing Camera permissions")
+            missingPermissions = true
+
         }
 
 
-        // Button Interactions
+        if (missingPermissions) {
+            requestPermissionLauncher.launch(REQUIRED_CAMERA_PERMISSIONS)
+        }
+
+
+        // Connection Button
+        binding.connectionBtn.setOnClickListener {
+//            if (allBluetoothPermissionsGranted()) {
+//                if (!isBluetoothSetup){
+//                    setupBluetooth()
+//                }
+//                if (!isEspConnected){
+//                    connectToEspLightingSystem()
+//                }
+//            } else {
+//                requestPermissionLauncher.launch(REQUIRED_BLUETOOTH_PERMISSIONS)
+//            }
+        }
+
+
+        // Camera Shutter
         binding.captureButton.setOnClickListener {
-            capture8PhotosWithSimulatedLighting()
+            if (allCameraPermissionsGranted()) {
+                //capture8PhotosWithSimulatedLighting()
+                capture8PhotosWithLightingSystem()
+            }else {
+                requestPermissionLauncher.launch(REQUIRED_CAMERA_PERMISSIONS)
+            }
         }
+
+
     }
 
-    /* ============================ Permissions ============================ */
-    // Required Permissions
-    private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA) // [Camera Permission]
 
-    // Check if all camera permissions are granted
-    // Expression Body Function for Boolean returns
+
+
+    /** ============================ Permissions ============================ **/
+    // All Required Permissions: camera, bluetooth
+    private val REQUIRED_CAMERA_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+    private val REQUIRED_BLUETOOTH_PERMISSIONS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        arrayOf(
+            Manifest.permission.BLUETOOTH_CONNECT,
+            Manifest.permission.BLUETOOTH_SCAN
+        )
+    } else {
+        arrayOf(
+            Manifest.permission.BLUETOOTH
+        )
+    }
+    private val REQUIRED_PERMISSIONS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+        arrayOf( // For Android 12+ (API 31+)
+            Manifest.permission.CAMERA,
+            Manifest.permission.BLUETOOTH_CONNECT,
+            Manifest.permission.BLUETOOTH_SCAN
+        )
+    }else{ // For Android < 12
+        arrayOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.BLUETOOTH
+        )
+    }
+
+    // Check Granted Permissions
+    private fun allCameraPermissionsGranted() = REQUIRED_CAMERA_PERMISSIONS.all {
+        ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED
+    }
+    private fun allBluetoothPermissionsGranted() = REQUIRED_BLUETOOTH_PERMISSIONS.all {
+        ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED
+    }
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all { // loop all required permissions
         ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED
     }
 
-    // Request Camera Permissions
+    /* ============= Request Permissions ============= */
+    @SuppressLint("MissingPermission")
     @RequiresApi(Build.VERSION_CODES.R)
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions() // request multiple permissions
     ) { permissions -> // permissions results
-        Log.d("CameraFragment", "Permission result received")
-        val allGranted = permissions.entries.all { it.value } // Get whether all permissions granted
-        if (allGranted) {
-            Log.d("CameraFragment", "All permissions granted, starting camera")
+
+        Log.d("CameraFragment", "request permissions")
+
+        // Process camera permission result
+        if(permissions[Manifest.permission.CAMERA] == true){
+            Log.d("CameraFragment", "Camera permission granted")
             // Force recreation of camera preview, refresh
             binding.previewView.visibility = View.GONE // Temporarily hides the previewView
             binding.root.postDelayed({
                 binding.previewView.visibility = View.VISIBLE
                 startCamera()
             }, 100)
-        } else {
-            Log.d("CameraFragment", "Permissions denied")
-            Toast.makeText(
-                requireContext(),
-                "Camera permission is required to use this feature",
-                Toast.LENGTH_SHORT
-            ).show()
         }
+        else if( permissions[Manifest.permission.CAMERA] == false){
+            Log.d("CameraFragment", "Camera permission denied")
+            Toast.makeText(requireContext(), "Camera permission is required", Toast.LENGTH_LONG).show()
+        }
+
     }
 
-    /* ============================ Setup Camera ============================ */
+
+
+
+    /** ============================ Setup Camera ============================ **/
     // Initializing and starting the camera using CameraX.
     @RequiresApi(Build.VERSION_CODES.R)
     private fun startCamera() {
@@ -133,7 +204,8 @@ class CameraFragment : Fragment() {
                 val resolutionSelector = ResolutionSelector.Builder()
                     .setResolutionStrategy(
                         ResolutionStrategy(
-                            Size(1080, 1080), // preferred upper bound
+                            Size(1440, 1440), // preferred upper bound
+                            // ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
                             ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
                         )
                     )
@@ -144,6 +216,7 @@ class CameraFragment : Fragment() {
                     .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                     .setTargetRotation(Surface.ROTATION_90)
                     .setTargetRotation(requireActivity().display?.rotation ?: Surface.ROTATION_0)
+                    .setResolutionSelector(resolutionSelector)
                     .build()
 
                 // Select back camera
@@ -168,7 +241,8 @@ class CameraFragment : Fragment() {
 
 
 
-    /* ============================ Capture Images ============================ */
+
+    /** ============================ Capture Images ============================ **/
     private fun capture8PhotosWithSimulatedLighting() {
         // call capture in viewmodel
         // ::captureToFile & {imagePaths -> ...} callback functions
@@ -176,6 +250,18 @@ class CameraFragment : Fragment() {
             Log.d("CaptureLoop", "Captured ${imagePaths.size} photos")
             imagePaths.forEachIndexed { i, path ->
                 Log.d("CaptureLoop", "Photo $i: $path")
+            }
+
+            val action = CameraFragmentDirections.actionCameraFragmentToProcessFragment(imagePaths.toTypedArray())
+            findNavController().navigate(action)
+        }
+    }
+
+    private fun capture8PhotosWithLightingSystem() {
+        viewModel.captureWithLightingSystem(requireContext(), ::captureToFile) { imagePaths ->
+            Log.d("CaptureResults", "Captured ${imagePaths.size} photos")
+            imagePaths.forEachIndexed { i, path ->
+                Log.d("CaptureResults", "Photo $i: $path")
             }
 
             val action = CameraFragmentDirections.actionCameraFragmentToProcessFragment(imagePaths.toTypedArray())
@@ -214,8 +300,16 @@ class CameraFragment : Fragment() {
     }
 
 
+    // Force landscape orientation when this fragment is visible
+    override fun onResume() {
+        super.onResume()
+        // Force landscape orientation when this fragment is visible
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
     }
 }

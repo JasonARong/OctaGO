@@ -76,6 +76,7 @@ class MaterialMapGenerator (
 
         // Parallel processing
         val numCores = Runtime.getRuntime().availableProcessors() // 4 cores in my case
+        Log.d("Parallel Processing", "number of cores: $numCores")
         val rowsPerChunk = height / numCores // how many rows to process in 1 chunk of parallel job
         runBlocking {
             val jobs = mutableListOf<Job>()
@@ -127,6 +128,7 @@ class MaterialMapGenerator (
                             val rAlbedo = calculateAlbedo(sharedIndices, rIntensities)
                             albedoMap.put(y,x, floatArrayOf(bAlbedo, gAlbedo, rAlbedo))
                         }
+                        Log.d("Parallel Processing", "Finished row $y")
                     }
                     lightMatrix.release()
                     intensityVector.release()

@@ -29,6 +29,10 @@ import com.yason.core.MaterialMapGenerator
 import androidx.exifinterface.media.ExifInterface
 import org.opencv.core.Point
 import androidx.core.graphics.scale
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 
 
 class ProcessFragment : Fragment() {
@@ -39,6 +43,9 @@ class ProcessFragment : Fragment() {
     private val args: ProcessFragmentArgs by navArgs()
 
     private lateinit var imageViews: List<ImageView>
+    private lateinit var imageProcessingJob: Deferred<Pair<MutableList<Bitmap>, MutableList<Bitmap>>>
+
+    private val processedImagePaths = mutableListOf<String>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -75,60 +82,67 @@ class ProcessFragment : Fragment() {
         }
 
         // List of images in BITMAP format
-        var bitmapImages = mutableListOf<Bitmap>()
-        val thumbnailBitmapImages = mutableListOf<Bitmap>()
-        for (path in imagePaths) {
-            // Load
-            val bitmap = BitmapFactory.decodeFile(path) ?: throw IllegalArgumentException("Failed to decode bitmap")
+        imageProcessingJob = viewLifecycleOwner.lifecycleScope.async(Dispatchers.Default) {
+            val fullImages = mutableListOf<Bitmap>()
+            val thumbnails = mutableListOf<Bitmap>()
 
-            // Rotate
-            val rotation = getExifRotation(path)
-            val rotatedBitmap = if (rotation != 0) {
-                val matrix = Matrix().apply { postRotate(rotation.toFloat()) }
-                Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-            } else {
-                bitmap
+            for (path in imagePaths) {
+                val bitmap = BitmapFactory.decodeFile(path) ?: throw IllegalArgumentException("Failed to decode bitmap")
+
+                val rotation = getExifRotation(path)
+                val rotatedBitmap = if (rotation != 0) {
+                    val matrix = Matrix().apply { postRotate(rotation.toFloat()) }
+                    Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+                } else {
+                    bitmap
+                }
+
+                val side = minOf(rotatedBitmap.width, rotatedBitmap.height)
+                val x = (rotatedBitmap.width - side) / 2
+                val y = (rotatedBitmap.height - side) / 2
+                val croppedBitmap = Bitmap.createBitmap(rotatedBitmap, x, y, side, side)
+
+                fullImages.add(croppedBitmap.scale(720, 720))
+                thumbnails.add(croppedBitmap.scale(200, 200))
             }
 
-            // Crop
-            val side = minOf(rotatedBitmap.width, rotatedBitmap.height)
-            val x = (rotatedBitmap.width - side) / 2
-            val y = (rotatedBitmap.height - side) / 2
-
-            val croppedBitmap = Bitmap.createBitmap(rotatedBitmap, x, y, side, side)
-            bitmapImages.add(croppedBitmap)
-
-            // Downscaled images for the ImageView
-            val thumbnailWidth = 200
-            val thumbnailHeight = 200
-            val scaledThumbnail = croppedBitmap.scale(thumbnailWidth, thumbnailHeight)
-            thumbnailBitmapImages.add(scaledThumbnail)
-        }
-
-        // Load images into UI ImageViews
-        for (i in thumbnailBitmapImages.indices) {
-            imageViews[i].setImageBitmap(thumbnailBitmapImages[i])
+            Pair(fullImages, thumbnails)
+        }.also { job -> // after process set the thumbnail pictures
+            viewLifecycleOwner.lifecycleScope.launch {
+                val (_, thumbnails) = job.await()
+                withContext(Dispatchers.Main) {
+                    for (i in thumbnails.indices) {
+                        imageViews[i].setImageBitmap(thumbnails[i])
+                    }
+                }
+            }
         }
 
 
 
-        // bitmapImages = filterListByIndices(bitmapImages, listOf(0, 2, 4, 6))
+
+
 
         binding.processBtn?.setOnClickListener {
-            var lightDirs = getLightDirections()
-            when {
-                binding.fast!!.isChecked -> { // Fast mode with 4 pictures
-                    bitmapImages = filterListByIndices(bitmapImages, listOf(0, 2, 4, 6)) as MutableList<Bitmap>
-                    lightDirs = filterListByIndices(lightDirs, listOf(0, 2, 4, 6))
-
-                }
-                binding.balanced!!.isChecked -> { // Balanced mode with 6 pictures
-                    bitmapImages = filterListByIndices(bitmapImages, listOf(1, 2, 3, 5, 6, 7)) as MutableList<Bitmap>
-                    lightDirs = filterListByIndices(lightDirs, listOf(1, 2, 3, 5, 6, 7))
-                }
-            }
             viewLifecycleOwner.lifecycleScope.launch {
-                generateAndSaveMaterialMaps(bitmapImages, lightDirs)
+                // Wait for the image processing job to complete
+                var (fullImages, _) = imageProcessingJob.await()
+                var lightDirs = getLightDirections()
+
+                when {
+                    binding.fast!!.isChecked -> { // Fast mode with 4 pictures
+                        fullImages = filterListByIndices(fullImages, listOf(0, 2, 4, 6)) as MutableList<Bitmap>
+                        lightDirs = filterListByIndices(lightDirs, listOf(0, 2, 4, 6))
+
+                    }
+                    binding.balanced!!.isChecked -> { // Balanced mode with 6 pictures
+                        fullImages = filterListByIndices(fullImages, listOf(1, 2, 3, 5, 6, 7)) as MutableList<Bitmap>
+                        lightDirs = filterListByIndices(lightDirs, listOf(1, 2, 3, 5, 6, 7))
+                    }
+                }
+
+                // Start Generate material maps Algorithm
+                generateAndSaveMaterialMaps(fullImages, lightDirs)
             }
         }
 
@@ -141,7 +155,9 @@ class ProcessFragment : Fragment() {
         withContext(Dispatchers.Default) {
             try {
                 val images = bitmapImages.map { bitmap ->
+                    Log.d("BitmapSize", "Bitmap size: ${bitmap.width} x ${bitmap.height}")
                     val mat = Mat()
+                    Log.d("MatSize", "Mat size: ${mat.cols()} x ${mat.rows()}")
                     Utils.bitmapToMat(bitmap, mat)
                     Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2BGR)
                     mat
@@ -152,10 +168,19 @@ class ProcessFragment : Fragment() {
 
                 Log.d("ProcessFragment", "Material maps generated, trying to save...")
                 withContext(Dispatchers.Main) {
-                    saveMatToPng(result.albedoMap, "albedo_map.png")
-                    saveMatToPng(result.normalMap, "normal_map.png")
-                    saveMatToPng(result.heightMap, "height_map.png")
-                    Toast.makeText(requireContext(), "Maps generated!", Toast.LENGTH_SHORT).show()
+                    try {
+                        saveMatToPng(result.albedoMap, "albedo_map.png")
+                        saveMatToPng(result.normalMap, "normal_map.png")
+                        saveMatToPng(result.heightMap, "height_map.png")
+                        Toast.makeText(requireContext(), "Maps generated!", Toast.LENGTH_SHORT).show()
+
+                        // Saved all images Navigate to preview
+                        val action = ProcessFragmentDirections.actionProcessFragmentToPreviewFragment(processedImagePaths.toTypedArray())
+                        findNavController().navigate(action)
+
+                    }catch (e: Exception){
+                        Toast.makeText(requireContext(), "Failed to save maps, error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -165,76 +190,8 @@ class ProcessFragment : Fragment() {
         }
     }
 
-    //how to wrap this part of my code into a function
-    // Generate material maps from the 8 image file path
-    /*
-    viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
-        try{
-            val images = bitmapImages.map { bitmap ->
-                val mat = Mat()
-                Utils.bitmapToMat(bitmap, mat)
-                Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2BGR)
-                mat
-            }
-            val lightDirs = getLightDirections()
 
-            // Create MaterialMapGenerator obj from core
-            val generator = MaterialMapGenerator(images, lightDirs, images.size)
-            val result = generator.generate() // start generating material maps
 
-            withContext(Dispatchers.Main) {
-                saveMatToPng(result.albedoMap, "albedo_map.png")
-                saveMatToPng(result.normalMap, "normal_map.png")
-                saveMatToPng(result.heightMap, "height_map.png")
-                Toast.makeText(requireContext(), "Maps generated!", Toast.LENGTH_SHORT).show()
-            }
-        }catch (e: Exception) {
-            withContext(Dispatchers.Main) {
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-    */
-
-    fun loadAndCropMat(imagePath: String): Mat {
-        // Load bitmap from imagePath
-        val bitmap = BitmapFactory.decodeFile(imagePath)
-        val mat = Mat()
-        Utils.bitmapToMat(bitmap, mat)
-        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2BGR)
-        bitmap.recycle()
-
-        // Rotate image based on EXIF data
-        val rotation = getExifRotation(imagePath)
-        val rotatedMat =
-        if (rotation != 0) {
-            val center = Point((mat.cols() / 2).toDouble(), (mat.rows() / 2).toDouble())
-            val rotMat = Imgproc.getRotationMatrix2D(center, rotation.toDouble(), 1.0)
-            val result = Mat()
-            Imgproc.warpAffine(mat, result, rotMat, mat.size())
-            result
-        } else {
-            mat
-        }
-
-        // Temporary implementation to determine center square region
-        // TODO: need to change the size to match the input size
-        val width = rotatedMat.cols()
-        val height = rotatedMat.rows()
-        Log.d("loadAndCropMat", "og width: $width, og height: $height")
-        val side = minOf(width, height)
-        val x = (width - side) / 2
-        val y = (height - side) / 2
-        val croppedMat = Mat(rotatedMat, org.opencv.core.Rect(x, y, side, side))
-
-        // Clean up temp mats
-        if (rotation != 0) {
-            mat.release()
-            rotatedMat.release()
-        }
-
-        return croppedMat
-    }
 
 
     fun getExifRotation(path: String): Int {
@@ -280,9 +237,10 @@ class ProcessFragment : Fragment() {
     private fun saveMatToPng(mat: Mat, filename: String) {
         val directory = File(requireContext().getExternalFilesDir(null), "MaterialMaps")
         if (!directory.exists()) directory.mkdirs()
-        val file = File(directory, filename)
+        val file = File(requireContext().cacheDir, filename)
         Imgcodecs.imwrite(file.absolutePath, mat)
         Log.d("SaveMat", "Saved: ${file.absolutePath}")
+        processedImagePaths.add(file.absolutePath)
     }
 
     private fun <T> filterListByIndices(

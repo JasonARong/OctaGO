@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/dark_blue_a20">
+    android:background="@color/dark_blue_a20"
+    tools:context=".process.ProcessFragment">
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/section_guideline"
+        android:id="@+id/sectionGuideline"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -16,12 +18,12 @@
     <!--=================== Left Preview Section ===================-->
     <ImageButton
         android:id="@+id/back_btn"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="@dimen/image_btn_size"
+        android:layout_height="@dimen/image_btn_size"
         android:layout_marginStart="@dimen/gap_large"
         android:layout_marginTop="16dp"
-        android:background="@drawable/round_background"
-        android:src="@drawable/chevron_icon"
+        android:background="@drawable/bg_round_background"
+        android:src="@drawable/ic_chevron_arrow"
         app:tint="@color/light_grey"
         android:contentDescription="@string/back_btn"
         app:layout_constraintStart_toStartOf="parent"
@@ -35,7 +37,7 @@
         android:layout_marginStart="@dimen/gap_medium"
         android:layout_marginTop="16dp"
         android:paddingHorizontal="@dimen/gap_medium"
-        android:background="@drawable/rounded_background"
+        android:background="@drawable/bg_rounded_background"
         android:backgroundTint="@color/dark_blue_a0"
         android:inputType="text"
         android:hint="Name your texture"
@@ -50,7 +52,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/gap_medium"
-        android:background="@drawable/round_background"
+        android:background="@drawable/bg_round_background"
         android:paddingHorizontal="@dimen/gap_small"
         app:constraint_referenced_ids="map_btn,download_btn"
         app:flow_horizontalGap="@dimen/gap_small"
@@ -59,33 +61,33 @@
         app:layout_constraintTop_toTopOf="@+id/more_options_btn" />
     <ImageButton
         android:id="@+id/map_btn"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="@dimen/image_btn_size"
+        android:layout_height="@dimen/image_btn_size"
         android:background="@android:color/transparent"
         android:scaleType="centerInside"
-        android:src="@drawable/map_marker"
+        android:src="@drawable/ic_map_marker"
         app:tint="@color/light_grey"
         android:contentDescription="@string/map_btn"/>
     <ImageButton
         android:id="@+id/download_btn"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="@dimen/image_btn_size"
+        android:layout_height="@dimen/image_btn_size"
         android:layout_marginEnd="@dimen/gap_large"
         android:background="@android:color/transparent"
         android:scaleType="centerInside"
-        android:src="@drawable/download"
+        android:src="@drawable/ic_download"
         app:tint="@color/light_grey"
         android:contentDescription="@string/download_btn"/>
 
     <ImageButton
         android:id="@+id/more_options_btn"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="@dimen/image_btn_size"
+        android:layout_height="@dimen/image_btn_size"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="@dimen/gap_large"
-        android:background="@drawable/round_background"
-        android:src="@drawable/dots_horizontal"
-        app:layout_constraintEnd_toStartOf="@+id/section_guideline"
+        android:background="@drawable/bg_round_background"
+        android:src="@drawable/ic_dots_horizontal"
+        app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="@color/light_grey"
         android:contentDescription="@string/more_options_btn"/>
@@ -99,7 +101,7 @@
         android:layout_marginBottom="@dimen/gap_small"
         android:columnCount="4"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/section_guideline"
+        app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/back_btn">
 
@@ -444,16 +446,26 @@
 
 
     <!--=================== Right Process Section ===================-->
+
+    <View
+        android:layout_width="300dp"
+        android:layout_height="match_parent"
+        android:background="@color/dark_blue_a10"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
     <TextView
         android:id="@+id/process"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/gap_large"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="28dp"
         android:text="PROCESS"
         android:textColor="@color/white"
         android:textSize="@dimen/text_size_large"
-        app:layout_constraintStart_toStartOf="@+id/section_guideline"
+        app:layout_constraintStart_toStartOf="@+id/sectionGuideline"
         app:layout_constraintTop_toTopOf="parent" />
 
     <RadioGroup
@@ -462,10 +474,11 @@
         android:layout_height="88dp"
         android:layout_marginStart="@dimen/gap_large"
         android:layout_marginEnd="@dimen/gap_large"
-        android:background="@drawable/rounded_background"
+        android:background="@drawable/bg_rounded_background"
+        android:backgroundTint="@color/dark_blue_a0"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/section_guideline"
+        app:layout_constraintStart_toStartOf="@+id/sectionGuideline"
         app:layout_constraintTop_toTopOf="@+id/gridLayout">
 
         <RadioButton
@@ -477,7 +490,7 @@
             android:gravity="center"
             android:background="@drawable/process_options_selector"
 
-            android:drawableTop="@drawable/fast"
+            android:drawableTop="@drawable/ic_fast"
             android:drawableTint="@drawable/process_options_content_selector"
             android:paddingTop="@dimen/gap_large"
             android:text="FAST"
@@ -494,7 +507,7 @@
             android:gravity="center"
             android:background="@drawable/process_options_selector"
 
-            android:drawableTop="@drawable/balanced"
+            android:drawableTop="@drawable/ic_balanced"
             android:drawableTint="@drawable/process_options_content_selector"
             android:paddingTop="@dimen/gap_large"
             android:text="BALANCED"
@@ -510,7 +523,7 @@
             android:gravity="center"
             android:background="@drawable/process_options_selector"
 
-            android:drawableTop="@drawable/quality"
+            android:drawableTop="@drawable/ic_quality"
             android:drawableTint="@drawable/process_options_content_selector"
             android:paddingTop="@dimen/gap_large"
             android:text="QUALITY"
@@ -520,10 +533,12 @@
     </RadioGroup>
 
     <TextView
+        android:id="@+id/textView4"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/gap_small"
-        android:background="@drawable/rounded_background"
+        android:background="@drawable/bg_rounded_background"
+        android:backgroundTint="@color/dark_blue_a0"
         android:padding="@dimen/gap_medium"
         android:text="Advance Settings"
         android:textColor="@color/white"
@@ -544,7 +559,7 @@
         app:flow_horizontalGap="@dimen/gap_small"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/section_guideline" />
+        app:layout_constraintStart_toStartOf="@+id/sectionGuideline" />
     <com.google.android.material.button.MaterialButton
         android:id="@+id/skipBtn"
         android:layout_width="0dp"

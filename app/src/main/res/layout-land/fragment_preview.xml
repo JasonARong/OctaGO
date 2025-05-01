@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dark_blue_a20"
+    tools:context=".preview.PreviewFragment">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/sectionGuideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_end="300dp" />
+
+    <!--=================== Left Preview Section ===================-->
+    <ImageButton
+        android:id="@+id/backBtn"
+        android:layout_width="@dimen/image_btn_size"
+        android:layout_height="@dimen/image_btn_size"
+        android:layout_marginStart="@dimen/gap_large"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/bg_ripple_effect"
+        android:contentDescription="@string/back_btn"
+        android:src="@drawable/ic_chevron_arrow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/light_grey" />
+
+    <ImageButton
+        android:id="@+id/moreOptionsBtn"
+        android:layout_width="@dimen/image_btn_size"
+        android:layout_height="@dimen/image_btn_size"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="@dimen/gap_large"
+        android:background="@drawable/bg_round_background"
+        android:src="@drawable/ic_dots_horizontal"
+        app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/light_grey"
+        android:contentDescription="@string/more_options_btn"/>
+
+    <ImageButton
+        android:id="@+id/mapBtn"
+        android:layout_width="@dimen/image_btn_size"
+        android:layout_height="@dimen/image_btn_size"
+        android:layout_marginStart="@dimen/gap_large"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_round_background"
+        android:contentDescription="Location"
+        android:src="@drawable/ic_map_marker"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:tint="@color/light_grey" />
+
+    <androidx.constraintlayout.helper.widget.Flow
+        android:id="@+id/two_btn_flow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_round_background"
+        android:paddingHorizontal="@dimen/gap_small"
+        app:constraint_referenced_ids="likeBtn,addFolderBtn,downloadBtn"
+        app:flow_horizontalGap="@dimen/gap_small"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageButton
+        android:id="@+id/likeBtn"
+        android:layout_width="@dimen/image_btn_size"
+        android:layout_height="@dimen/image_btn_size"
+        android:background="@android:color/transparent"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_heart"
+        app:tint="@color/light_grey"
+        android:contentDescription="@string/map_btn"/>
+    <ImageButton
+        android:id="@+id/addFolderBtn"
+        android:layout_width="@dimen/image_btn_size"
+        android:layout_height="@dimen/image_btn_size"
+        android:background="@android:color/transparent"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_folder_plus"
+        app:tint="@color/light_grey"
+        android:contentDescription="@string/map_btn"/>
+    <ImageButton
+        android:id="@+id/downloadBtn"
+        android:layout_width="@dimen/image_btn_size"
+        android:layout_height="@dimen/image_btn_size"
+        android:background="@android:color/transparent"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_download"
+        app:tint="@color/light_grey"
+        android:contentDescription="@string/map_btn"/>
+
+    <ImageButton
+        android:id="@+id/eightPhotosBtn"
+        android:layout_width="@dimen/image_btn_size"
+        android:layout_height="@dimen/image_btn_size"
+        android:layout_marginEnd="@dimen/gap_large"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_round_background"
+        android:contentDescription="@string/back_btn"
+        android:src="@drawable/ic_image_multiple"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"
+        app:tint="@color/light_grey" />
+
+    <!--=================== Right Process Section ===================-->
+    <View
+        android:id="@+id/view"
+        android:layout_width="300dp"
+        android:layout_height="match_parent"
+        android:background="@color/dark_blue_a10"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/gap_large"
+        android:layout_marginTop="28dp"
+        android:text="Material Maps"
+        android:textColor="@color/white"
+        android:textSize="@dimen/text_size_large"
+        app:layout_constraintStart_toStartOf="@+id/sectionGuideline"
+        app:layout_constraintTop_toTopOf="@+id/view" />
+
+
+    <androidx.constraintlayout.helper.widget.Flow
+        android:id="@+id/flow"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/gap_large"
+        android:layout_marginTop="@dimen/gap_large"
+        android:layout_marginEnd="@dimen/gap_large"
+        app:constraint_referenced_ids="albedoMap,normalMap,heightMap"
+        app:flow_horizontalGap="@dimen/gap_small"
+        app:flow_wrapMode="chain"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/sectionGuideline"
+        app:layout_constraintTop_toBottomOf="@+id/textView6" />
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/albedoMap"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:strokeWidth="0dp"
+        app:strokeColor="@color/green"
+        android:backgroundTint="@color/dark_blue_a0">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/albedoImage"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_launcher_background"
+                android:contentDescription="Albedo Map" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Albedo"
+                android:textColor="@color/white"
+                android:paddingVertical="@dimen/gap_small"
+                android:textSize="@dimen/text_size_small"/>
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/normalMap"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/dark_blue_a0"
+        app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"
+        app:strokeColor="@color/green"
+        app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/normalImage"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:contentDescription="Albedo Map"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_launcher_background" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingVertical="@dimen/gap_small"
+                android:text="Normal"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_size_small" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/heightMap"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/dark_blue_a0"
+        app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"
+        app:strokeColor="@color/green"
+        app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/heightImage"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:contentDescription="Albedo Map"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_launcher_background" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingVertical="@dimen/gap_small"
+                android:text="Height"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_size_small" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="24dp"
+        android:background="@color/dark_grey"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/sectionGuideline"
+        app:layout_constraintTop_toBottomOf="@+id/flow" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/editBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/gap_large"
+        android:layout_marginEnd="@dimen/gap_large"
+        android:layout_marginTop="24dp"
+        android:paddingHorizontal="@dimen/gap_medium"
+        android:paddingEnd="36dp"
+        android:backgroundTint="@color/dark_blue_a0"
+        android:gravity="center"
+        android:text="EDIT"
+        android:textColor="@color/white"
+        android:textSize="@dimen/text_size_large"
+        app:cornerRadius="8dp"
+        app:icon="@drawable/ic_wrench"
+        app:iconGravity="start"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/sectionGuideline"
+        app:layout_constraintTop_toBottomOf="@+id/divider"
+        android:alpha="0.4"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/duplicateBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/gap_large"
+        android:layout_marginEnd="@dimen/gap_large"
+        android:backgroundTint="@color/dark_blue_a0"
+        android:gravity="center"
+        android:paddingHorizontal="@dimen/gap_medium"
+        android:paddingEnd="36dp"
+        android:text="DUPLICATE"
+        android:textColor="@color/white"
+        android:textSize="@dimen/text_size_large"
+        app:cornerRadius="8dp"
+        app:icon="@drawable/ic_copy"
+        app:iconGravity="start"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/sectionGuideline"
+        app:layout_constraintTop_toBottomOf="@+id/editBtn"
+        android:alpha="0.4"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/deleteBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/gap_large"
+        android:layout_marginEnd="@dimen/gap_large"
+        android:backgroundTint="@color/dark_blue_a0"
+        android:gravity="center"
+        android:paddingHorizontal="@dimen/gap_medium"
+        android:paddingEnd="36dp"
+        android:text="DELETE"
+        android:textColor="@color/red"
+        android:textSize="@dimen/text_size_large"
+        app:cornerRadius="8dp"
+        app:icon="@drawable/ic_delete"
+        app:iconTint="@color/red"
+        app:iconGravity="start"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/sectionGuideline"
+        app:layout_constraintTop_toBottomOf="@+id/duplicateBtn"
+        android:alpha="0.4"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

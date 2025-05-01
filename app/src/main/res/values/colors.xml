@@ -9,5 +9,7 @@
     <color name="dark_blue_a0">#2B2E3B</color>
     <color name="dark_blue_a10">#1C202B</color>
     <color name="dark_blue_a20">#11131E</color>
+    <color name="red">#FF6060</color>
+
 
 </resources>
