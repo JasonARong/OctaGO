@@ -22,7 +22,7 @@
         android:layout_height="@dimen/image_btn_size"
         android:layout_marginStart="@dimen/gap_large"
         android:layout_marginTop="16dp"
-        android:background="@drawable/bg_round_background"
+        android:background="@drawable/ripple_button"
         android:src="@drawable/ic_chevron_arrow"
         app:tint="@color/light_grey"
         android:contentDescription="@string/back_btn"
@@ -54,7 +54,7 @@
         android:layout_marginEnd="@dimen/gap_medium"
         android:background="@drawable/bg_round_background"
         android:paddingHorizontal="@dimen/gap_small"
-        app:constraint_referenced_ids="map_btn,download_btn"
+        app:constraint_referenced_ids="map_btn,exportToPhotoBtn"
         app:flow_horizontalGap="@dimen/gap_small"
         app:layout_constraintBottom_toBottomOf="@+id/more_options_btn"
         app:layout_constraintEnd_toStartOf="@+id/more_options_btn"
@@ -67,13 +67,14 @@
         android:scaleType="centerInside"
         android:src="@drawable/ic_map_marker"
         app:tint="@color/light_grey"
-        android:contentDescription="@string/map_btn"/>
+        android:contentDescription="@string/map_btn"
+        android:alpha="0.4"/>
     <ImageButton
-        android:id="@+id/download_btn"
+        android:id="@+id/exportToPhotoBtn"
         android:layout_width="@dimen/image_btn_size"
         android:layout_height="@dimen/image_btn_size"
         android:layout_marginEnd="@dimen/gap_large"
-        android:background="@android:color/transparent"
+        android:background="@drawable/ripple_button"
         android:scaleType="centerInside"
         android:src="@drawable/ic_download"
         app:tint="@color/light_grey"
@@ -90,7 +91,8 @@
         app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="@color/light_grey"
-        android:contentDescription="@string/more_options_btn"/>
+        android:contentDescription="@string/more_options_btn"
+        android:alpha="0.4"/>
 
     <GridLayout
         android:id="@+id/gridLayout"
@@ -488,13 +490,13 @@
             android:layout_weight="1"
             android:button="@null"
             android:gravity="center"
-            android:background="@drawable/process_options_selector"
+            android:background="@drawable/sel_process_options"
 
             android:drawableTop="@drawable/ic_fast"
-            android:drawableTint="@drawable/process_options_content_selector"
+            android:drawableTint="@drawable/sel_process_options_content"
             android:paddingTop="@dimen/gap_large"
             android:text="FAST"
-            android:textColor="@drawable/process_options_content_selector"
+            android:textColor="@drawable/sel_process_options_content"
             android:textSize="@dimen/text_size_small" />
 
         <RadioButton
@@ -505,13 +507,13 @@
             android:button="@null"
             android:checked="true"
             android:gravity="center"
-            android:background="@drawable/process_options_selector"
+            android:background="@drawable/sel_process_options"
 
             android:drawableTop="@drawable/ic_balanced"
-            android:drawableTint="@drawable/process_options_content_selector"
+            android:drawableTint="@drawable/sel_process_options_content"
             android:paddingTop="@dimen/gap_large"
             android:text="BALANCED"
-            android:textColor="@drawable/process_options_content_selector"
+            android:textColor="@drawable/sel_process_options_content"
             android:textSize="@dimen/text_size_small" />
 
         <RadioButton
@@ -521,13 +523,13 @@
             android:layout_weight="1"
             android:button="@null"
             android:gravity="center"
-            android:background="@drawable/process_options_selector"
+            android:background="@drawable/sel_process_options"
 
             android:drawableTop="@drawable/ic_quality"
-            android:drawableTint="@drawable/process_options_content_selector"
+            android:drawableTint="@drawable/sel_process_options_content"
             android:paddingTop="@dimen/gap_large"
             android:text="QUALITY"
-            android:textColor="@drawable/process_options_content_selector"
+            android:textColor="@drawable/sel_process_options_content"
             android:textSize="@dimen/text_size_small" />
 
     </RadioGroup>
@@ -545,7 +547,8 @@
         android:textSize="@dimen/text_size_medium"
         app:layout_constraintEnd_toEndOf="@+id/radioGroup"
         app:layout_constraintStart_toStartOf="@+id/radioGroup"
-        app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
+        app:layout_constraintTop_toBottomOf="@+id/radioGroup"
+        android:alpha="0.4"/>
 
     <androidx.constraintlayout.helper.widget.Flow
         android:id="@+id/process_button_flow"
@@ -569,7 +572,8 @@
         android:textSize="@dimen/text_size_large"
         android:textColor="@color/white"
         android:padding="@dimen/gap_medium"
-        app:cornerRadius="8dp"/>
+        app:cornerRadius="8dp"
+        app:rippleColor="@color/white"/>
     <com.google.android.material.button.MaterialButton
         android:id="@+id/processBtn"
         android:layout_width="0dp"
@@ -579,7 +583,31 @@
         android:textSize="@dimen/text_size_large"
         android:textColor="@color/green"
         android:padding="@dimen/gap_medium"
-        app:cornerRadius="8dp"/>
+        app:cornerRadius="8dp"
+        app:rippleColor="@color/white"/>
 
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/loadingOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#C9000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="40dp"
+            android:text="Generating Materials..."
+            android:textColor="@color/white"
+            android:textSize="28sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

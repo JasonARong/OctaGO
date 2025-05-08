@@ -16,13 +16,32 @@
         app:layout_constraintGuide_end="300dp" />
 
     <!--=================== Left Preview Section ===================-->
+    <com.github.chrisbanes.photoview.PhotoView
+        android:id="@+id/photoView"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:scaleType="center"
+        android:src="@drawable/ic_launcher_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+<!--    <io.github.sceneview.SceneView-->
+<!--        android:id="@+id/sceneView"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:background="@color/dark_blue_a20"-->
+<!--        app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"-->
+<!--        app:layout_constraintStart_toStartOf="@+id/photoView" />-->
+
     <ImageButton
         android:id="@+id/backBtn"
         android:layout_width="@dimen/image_btn_size"
         android:layout_height="@dimen/image_btn_size"
         android:layout_marginStart="@dimen/gap_large"
         android:layout_marginTop="16dp"
-        android:background="@drawable/bg_ripple_effect"
+        android:background="@drawable/ripple_button"
         android:contentDescription="@string/back_btn"
         android:src="@drawable/ic_chevron_arrow"
         app:layout_constraintStart_toStartOf="parent"
@@ -40,7 +59,8 @@
         app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="@color/light_grey"
-        android:contentDescription="@string/more_options_btn"/>
+        android:contentDescription="@string/more_options_btn"
+        android:alpha="0.4"/>
 
     <ImageButton
         android:id="@+id/mapBtn"
@@ -53,7 +73,8 @@
         android:src="@drawable/ic_map_marker"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:tint="@color/light_grey" />
+        app:tint="@color/light_grey"
+        android:alpha="0.4"/>
 
     <androidx.constraintlayout.helper.widget.Flow
         android:id="@+id/two_btn_flow"
@@ -76,7 +97,8 @@
         android:scaleType="centerInside"
         android:src="@drawable/ic_heart"
         app:tint="@color/light_grey"
-        android:contentDescription="@string/map_btn"/>
+        android:contentDescription="@string/map_btn"
+        android:alpha="0.4"/>
     <ImageButton
         android:id="@+id/addFolderBtn"
         android:layout_width="@dimen/image_btn_size"
@@ -85,12 +107,13 @@
         android:scaleType="centerInside"
         android:src="@drawable/ic_folder_plus"
         app:tint="@color/light_grey"
-        android:contentDescription="@string/map_btn"/>
+        android:contentDescription="@string/map_btn"
+        android:alpha="0.4"/>
     <ImageButton
         android:id="@+id/downloadBtn"
         android:layout_width="@dimen/image_btn_size"
         android:layout_height="@dimen/image_btn_size"
-        android:background="@android:color/transparent"
+        android:background="@drawable/ripple_button"
         android:scaleType="centerInside"
         android:src="@drawable/ic_download"
         app:tint="@color/light_grey"
@@ -144,7 +167,8 @@
         app:flow_wrapMode="chain"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/sectionGuideline"
-        app:layout_constraintTop_toBottomOf="@+id/textView6" />
+        app:layout_constraintTop_toBottomOf="@+id/textView6"
+        android:visibility="visible"/>
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/albedoMap"
         android:layout_width="0dp"

@@ -29,13 +29,13 @@ class MaterialMapGenerator (
     )
 
     fun generate(): MaterialMaps {
-        val (normalMap, albedoMap) = generateNormalAndAlbedoMap()
+        val (normalMap, displayNormalMap, albedoMap) = generateNormalAndAlbedoMap()
         val heightMap = generateHeightMap(normalMap)
-        return MaterialMaps(normalMap, albedoMap, heightMap)
+        return MaterialMaps(displayNormalMap, albedoMap, heightMap)
     }
 
     /* ============================ Normal And Albedo Map Generation ============================ */
-    private fun generateNormalAndAlbedoMap (): Pair<Mat, Mat>{
+    private fun generateNormalAndAlbedoMap (): Triple<Mat, Mat, Mat>{
         // Normalize Light direction vectors into unit length
         val lightDirections = lightDirectionsUnnormalized.map {
             // magnitude = sqrt(x^2 + y^2 + z^2)
@@ -138,15 +138,42 @@ class MaterialMapGenerator (
             jobs.joinAll() // Wait for all coroutines to finish
         }
 
+        // Keep normalMap with OpenCV BGR for height calculation
+        // Create displayNormalMap with RGB values for visualization
+        // Blueish Color, solve the orange normal map problem
+        val displayNormalMap = Mat(normalMap.size(), CvType.CV_32FC3)
+        // Split the channels of the normal map
+        val channels = ArrayList<Mat>()
+        Core.split(normalMap, channels)
+        // Transform channels from [-1,1] to [0,1] range using matrix operations
+        val xChannel = channels[0]
+        val yChannel = channels[1]
+        val zChannel = channels[2]
+        Core.multiply(xChannel, Scalar(0.5), xChannel)
+        Core.add(xChannel, Scalar(0.5), xChannel)
+        Core.multiply(yChannel, Scalar(0.5), yChannel)
+        Core.add(yChannel, Scalar(0.5), yChannel)
+        Core.multiply(zChannel, Scalar(0.5), zChannel)
+        Core.add(zChannel, Scalar(0.5), zChannel)
+        // Reorder channels for proper RGB normal map (OpenCV uses BGR)
+        val reordered = ArrayList<Mat>()
+        reordered.add(zChannel) // B channel gets Z component
+        reordered.add(yChannel) // G channel gets Y component
+        reordered.add(xChannel) // R channel gets X component
+        Core.merge(reordered, displayNormalMap)
+
         // normalizes the normal map values to the 0-255 range suitable for image storage and display.
         val normalizedNormalMap = Mat()
         Core.normalize(normalMap, normalizedNormalMap, 0.0, 255.0, Core.NORM_MINMAX, CvType.CV_8UC3)
+        val normalizedDisplayNormalMap = Mat()
+        Core.normalize(displayNormalMap, normalizedDisplayNormalMap, 0.0, 255.0, Core.NORM_MINMAX, CvType.CV_8UC3)
 
         val normalizedAlbedoMap = Mat()
         Core.normalize(albedoMap, normalizedAlbedoMap, 0.0, 255.0, Core.NORM_MINMAX, CvType.CV_8UC3)
         Core.multiply(normalizedAlbedoMap, Scalar(1.5, 1.5, 1.5), normalizedAlbedoMap)
 
         // Clean up temporary matrices
+        displayNormalMap.release()
         normalMap.release()
         albedoMap.release()
         for(gray in grayImages){
@@ -158,7 +185,7 @@ class MaterialMapGenerator (
             }
         }
 
-        return Pair(normalizedNormalMap, normalizedAlbedoMap)
+        return Triple(normalizedNormalMap, normalizedDisplayNormalMap, normalizedAlbedoMap)
     }
 
 

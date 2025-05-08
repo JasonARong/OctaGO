@@ -15,13 +15,20 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 import android.Manifest
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
+import android.app.AlertDialog
+import android.content.Context
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Environment
 import android.util.Size
@@ -31,10 +38,18 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
+import androidx.navigation.fragment.findNavController
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
-import androidx.navigation.fragment.findNavController
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import com.yason.octago.R
 import com.yason.octago.databinding.FragmentCameraBinding
+import com.yason.octago.camera.LightingWebSocketManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -47,6 +62,14 @@ class CameraFragment : Fragment() {
     // Camera
     private val viewModel: CameraViewModel by viewModels()
     private var imageCapture: ImageCapture? = null // CameraX ImageCapture object
+
+    // ESP
+    // lighting websocket manager that listens to shutter press
+    private lateinit var lightingWebSocketManager: LightingWebSocketManager
+    private var isConnectedToESP = false
+    private var connectionMonitorJob: Job? = null // Job to monitor connection status
+    private var shutterClickedCount = 0
+
 
     // Called when create the user interface view.
     override fun onCreateView(
@@ -65,8 +88,9 @@ class CameraFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        var missingPermissions = false
 
+        // Permissions
+        var missingPermissions = false
         // Start camera if the permissions are granted
         if (allCameraPermissionsGranted()) {
             startCamera()
@@ -75,11 +99,25 @@ class CameraFragment : Fragment() {
             missingPermissions = true
 
         }
-
-
         if (missingPermissions) {
             requestPermissionLauncher.launch(REQUIRED_CAMERA_PERMISSIONS)
         }
+
+
+        // Start ESP connection monitor
+        startConnectionMonitor()
+
+
+        // Lighting WebSocket, Listens to shutter button click
+        lightingWebSocketManager = LightingWebSocketManager(
+            serverUrl = "ws://192.168.4.1:81",
+            onShutterPress = {
+                requireActivity().runOnUiThread {
+                    binding.captureButton.performClick()
+                }
+            }
+        )
+        lightingWebSocketManager.connect()
 
 
         // Connection Button
@@ -100,14 +138,36 @@ class CameraFragment : Fragment() {
         // Camera Shutter
         binding.captureButton.setOnClickListener {
             if (allCameraPermissionsGranted()) {
-                //capture8PhotosWithSimulatedLighting()
-                capture8PhotosWithLightingSystem()
+                if (isConnectedToESP){ // if connected to ESP, use lighting system
+                    if (shutterClickedCount == 0) { // if first click, light up the first light for correcting exposure and monitor
+                        viewModel.readyToCapture()
+                        shutterClickedCount++
+                    }
+                    else if (shutterClickedCount == 1){ // actually take the 8 photos
+                        capture8PhotosWithLightingSystem()
+                        shutterClickedCount = 0
+                    }
+                }
+                else{ // if not connected to ESP, use simulated lighting
+                    val builder = AlertDialog.Builder(requireContext())
+                    builder.setTitle("Shutter Button")
+                    builder.setMessage("You are not connected to the OctaGO lighting system. Would you still like to scan the material?")
+
+                    builder.setPositiveButton("Confirm") { dialog, which ->
+                        capture8PhotosWithSimulatedLighting()
+                    }
+                    builder.setNegativeButton("Cancel") { dialog, which ->
+                        // User clicked Cancel
+                        dialog.dismiss()
+                    }
+
+                    val dialog = builder.create()
+                    dialog.show()
+                }
             }else {
                 requestPermissionLauncher.launch(REQUIRED_CAMERA_PERMISSIONS)
             }
         }
-
-
     }
 
 
@@ -116,39 +176,13 @@ class CameraFragment : Fragment() {
     /** ============================ Permissions ============================ **/
     // All Required Permissions: camera, bluetooth
     private val REQUIRED_CAMERA_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
-    private val REQUIRED_BLUETOOTH_PERMISSIONS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        arrayOf(
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.BLUETOOTH_SCAN
-        )
-    } else {
-        arrayOf(
-            Manifest.permission.BLUETOOTH
-        )
-    }
-    private val REQUIRED_PERMISSIONS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
-        arrayOf( // For Android 12+ (API 31+)
-            Manifest.permission.CAMERA,
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.BLUETOOTH_SCAN
-        )
-    }else{ // For Android < 12
-        arrayOf(
-            Manifest.permission.CAMERA,
-            Manifest.permission.BLUETOOTH
-        )
-    }
+
 
     // Check Granted Permissions
     private fun allCameraPermissionsGranted() = REQUIRED_CAMERA_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED
     }
-    private fun allBluetoothPermissionsGranted() = REQUIRED_BLUETOOTH_PERMISSIONS.all {
-        ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED
-    }
-    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all { // loop all required permissions
-        ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED
-    }
+
 
     /* ============= Request Permissions ============= */
     @SuppressLint("MissingPermission")
@@ -175,6 +209,65 @@ class CameraFragment : Fragment() {
         }
 
     }
+
+
+
+    /** ============================ ESP Lighting Connection Status ============================ **/
+    private fun updateConnectionIndicator(isConnected: Boolean) {
+        val colorResId = if (isConnected) R.color.green else R.color.red // select color
+        // Apply color
+        binding.connectionIndicator.backgroundTintList = ContextCompat.getColorStateList(requireContext(), colorResId)
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun startConnectionMonitor() {
+        connectionMonitorJob?.cancel() // Prevent duplicate jobs
+
+        connectionMonitorJob = viewLifecycleOwner.lifecycleScope.launch {
+            while (isActive) {
+                val connectionStatus = isConnectedToEsp(requireContext()) // possible missing permission
+
+                // Update UI if connection status has changed
+                if (connectionStatus != isConnectedToESP) {
+                    withContext(Dispatchers.Main) {
+                        updateConnectionIndicator(connectionStatus)
+                    }
+                }
+
+                isConnectedToESP = connectionStatus
+
+                delay(2000) // Check every 2 seconds
+            }
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
+    fun isConnectedToEsp(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val networkCapabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+
+        // Check if connected via Wi-Fi
+        if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+            val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            val connectionInfo = wifiManager.connectionInfo
+
+            val bssid = connectionInfo.bssid
+
+            // If BSSID is not null/unknown, we are connected to some Wi-Fi
+            if (bssid != null && bssid != "00:00:00:00:00:00") {
+                // Optional: if you want to validate it is ESP AP specifically
+                // you can hardcode your ESP BSSID if needed or just return true
+
+                return true
+            }
+        }
+
+        return false
+    }
+
+
+
 
 
 
@@ -244,6 +337,9 @@ class CameraFragment : Fragment() {
 
     /** ============================ Capture Images ============================ **/
     private fun capture8PhotosWithSimulatedLighting() {
+        // Set shutter UI to loading
+        setShutterButtonLoading(true)
+
         // call capture in viewmodel
         // ::captureToFile & {imagePaths -> ...} callback functions
         viewModel.simulateLightSyncCapture(requireContext(), ::captureToFile) { imagePaths ->
@@ -252,18 +348,24 @@ class CameraFragment : Fragment() {
                 Log.d("CaptureLoop", "Photo $i: $path")
             }
 
+
+            setShutterButtonLoading(false)
             val action = CameraFragmentDirections.actionCameraFragmentToProcessFragment(imagePaths.toTypedArray())
             findNavController().navigate(action)
         }
     }
 
     private fun capture8PhotosWithLightingSystem() {
+        // Set shutter UI to loading
+        setShutterButtonLoading(true)
+
         viewModel.captureWithLightingSystem(requireContext(), ::captureToFile) { imagePaths ->
             Log.d("CaptureResults", "Captured ${imagePaths.size} photos")
             imagePaths.forEachIndexed { i, path ->
                 Log.d("CaptureResults", "Photo $i: $path")
             }
 
+            setShutterButtonLoading(false)
             val action = CameraFragmentDirections.actionCameraFragmentToProcessFragment(imagePaths.toTypedArray())
             findNavController().navigate(action)
         }
@@ -299,6 +401,33 @@ class CameraFragment : Fragment() {
         }
     }
 
+    // Set the UI shutter button while capturing 8 images
+    private fun setShutterButtonLoading(isLoading: Boolean) {
+        binding.captureButton.isEnabled = !isLoading
+
+        if (isLoading) {
+//            binding.captureButton.alpha = 0.4f
+            ValueAnimator.ofFloat(1.0f, 0.4f).apply {
+                duration = 100
+                addUpdateListener { animator ->
+                    val value = animator.animatedValue as Float
+                    binding.captureButton.alpha = value
+                }
+                start()
+            }
+        } else {
+            binding.captureButton.alpha = 1f
+//            ValueAnimator.ofFloat(0.4f, 1.0f).apply {
+//                duration = 100
+//                addUpdateListener { animator ->
+//                    val value = animator.animatedValue as Float
+//                    binding.captureButton.alpha = value
+//                }
+//                start()
+//            }
+        }
+    }
+
 
     // Force landscape orientation when this fragment is visible
     override fun onResume() {
@@ -310,6 +439,18 @@ class CameraFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+
+        // Discount lighting websocket connections
+        lightingWebSocketManager.disconnect()
+
+        // Allow all orientation when fragment is destroyed
+        //activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
     }
 }
+
+
+
+
+
+
+

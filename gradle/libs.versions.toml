@@ -19,6 +19,8 @@ fragment = "1.6.2"
 exifinterface = "1.3.7"
 flexbox = "3.0.0"
 java-websocket = "1.5.4"
+photoview = "2.3.0"
+sceneview = "2.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -50,7 +52,10 @@ androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterfa
 # Flexbox
 flexbox = { group = "com.google.android.flexbox", name = "flexbox", version.ref = "flexbox" }
 # WebSockets
-java-websocket = { group = "org.java-websocket", name = "JavaWebSocket", version.ref = "java-websocket" }
+java-websocket = { group = "org.java-websocket", name = "Java-WebSocket", version.ref = "java-websocket" }
+# Zoomable Photoview
+photoview = { module = "com.github.chrisbanes:PhotoView", version.ref = "photoview" }
+sceneview = { module = "io.github.sceneview:sceneview", name = "sceneview", version.ref = "sceneview"}
 
 # Dependency Injection (optional for later)
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }

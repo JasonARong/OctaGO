@@ -3,6 +3,7 @@ package com.yason.octago.camera
 import android.content.Context
 import android.os.Environment
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +43,9 @@ class CameraViewModel : ViewModel() {
                     directory.mkdirs()
                 }
 
-                val fileName = "IMG_${SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(System.currentTimeMillis())}_$i.png"
+                // Unique file name
+//                val fileName = "IMG_${SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(System.currentTimeMillis())}_$i.png"
+                val fileName = "IMG_$i.png" // same file name for each capture -> overwrite
                 val file = File(context.cacheDir, fileName)
 //                val file = File(directory, fileName)
 
@@ -53,6 +56,7 @@ class CameraViewModel : ViewModel() {
                     Log.e("LightSim", "Failed to capture image $i")
                 }
 
+//                Toast.makeText(context, "Image $i captured", Toast.LENGTH_SHORT).show()
                 delay(200) // wait for light to stabilize (simulate)
             }
             onComplete(_capturedImages)
@@ -64,11 +68,11 @@ class CameraViewModel : ViewModel() {
         imageCaptureFunc: suspend (String) -> Boolean,
         onComplete: (List<String>) -> Unit
     ) {
-        resetImages()
+//        resetImages()
         viewModelScope.launch {
             try{
                 // Tell ESP to start lighting capture
-                sendPostRequest("start_capture")
+//                sendPostRequest("start_capture")
 
                 // Repeat 8 times to take 8 pictures
                 for (i in 0 until 8) {
@@ -84,10 +88,23 @@ class CameraViewModel : ViewModel() {
                         Log.e("Capture", "Failed to capture image $i")
                     }
 
+//                    Toast.makeText(context, "Image $i captured", Toast.LENGTH_SHORT).show()
                     sendPostRequest("next_light")
                     delay(200)
                 }
                 onComplete(_capturedImages)
+            }catch (e: Exception){
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun readyToCapture(){
+        resetImages()
+        viewModelScope.launch {
+            try{
+                // Tell ESP to get ready for capture
+                sendPostRequest("start_capture")
             }catch (e: Exception){
                 e.printStackTrace()
             }

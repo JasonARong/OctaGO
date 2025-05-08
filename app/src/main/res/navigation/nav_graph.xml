@@ -31,6 +31,10 @@
             android:id="@+id/action_processFragment_to_previewFragment"
             app:destination="@id/previewFragment"
             app:enterAnim="@android:anim/fade_in" />
+        <action
+            android:id="@+id/action_processFragment_to_galleryFragment"
+            app:destination="@id/galleryFragment"
+            app:enterAnim="@android:anim/fade_in" />
     </fragment>
 
     <fragment
@@ -44,5 +48,22 @@
             app:argType="string[]"
             app:nullable="true"
             android:defaultValue="@null" />
+
+        <action
+            android:id="@+id/action_previewFragment_to_galleryFragment"
+            app:destination="@id/galleryFragment"
+            app:enterAnim="@android:anim/fade_in" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/galleryFragment"
+        android:name="com.yason.octago.gallery.GalleryFragment"
+        android:label="Gallery"
+        tools:layout="@layout/fragment_gallery">
+
+        <action
+            android:id="@+id/action_galleryFragment_to_cameraFragment"
+            app:destination="@id/cameraFragment"
+            app:enterAnim="@android:anim/fade_in" />
     </fragment>
 </navigation>

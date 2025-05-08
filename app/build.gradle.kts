@@ -77,7 +77,13 @@ dependencies {
     implementation(libs.flexbox)
 
     // WebSockets
-//    implementation(libs.java.websocket)
+    implementation(libs.java.websocket)
+
+    // Zoomable Photoview
+    implementation(libs.photoview)
+
+    // 3D Render Scene View
+    implementation(libs.sceneview)
 
     // Feature Modules
     implementation(project(":core"))

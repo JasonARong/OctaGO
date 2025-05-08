@@ -1,9 +1,14 @@
 package com.yason.octago.preview
 
 import android.animation.ValueAnimator
+import android.content.ContentValues
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +21,12 @@ import com.yason.octago.databinding.FragmentPreviewBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import androidx.core.graphics.scale
+import androidx.navigation.fragment.findNavController
+import com.yason.octago.process.ProcessFragmentDirections
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+
 
 class PreviewFragment: Fragment() {
 
@@ -23,8 +34,9 @@ class PreviewFragment: Fragment() {
     private val binding get() = _binding!!
 
     private val args: PreviewFragmentArgs by navArgs()
-    private val processedImages = mutableListOf<Bitmap>()
 
+    // 3 Processed material map images
+    private val processedImages = mutableListOf<Bitmap>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,46 +50,60 @@ class PreviewFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Get all IMAGE PATHS from safe arguments
+
+        // Get all IMAGE PATHS from safe args
         val processedImagePaths = args.processedImagePaths?.toList()
         if (processedImagePaths.isNullOrEmpty()) {
             Toast.makeText(requireContext(), "No images provided", Toast.LENGTH_SHORT).show()
             return
         }else if (processedImagePaths.size != 3) {
-            Toast.makeText(requireContext(), "Expected 8 images, got ${processedImagePaths.size}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Expected 3 images, got ${processedImagePaths.size}", Toast.LENGTH_SHORT).show()
             return
         }
 
         viewLifecycleOwner.lifecycleScope.async(Dispatchers.Default) {
+            val thumbnails = mutableListOf<Bitmap>()
+
+            // Load and scale all processed map images
             for (i in processedImagePaths.indices) {
-                // Load bit map from path
                 val bitmap = BitmapFactory.decodeFile(processedImagePaths[i]) ?: throw IllegalArgumentException("Failed to decode bitmap")
+                thumbnails.add(bitmap.scale(400, 400, false))
+                processedImages.add(bitmap) // Add bitmap to global list for easy access
+                Log.d("PreviewFragment", "Added bitmap $i to processedImages list")
+            }
 
-                // Set thumbnail for each option
-                val thumbnail = bitmap.scale(200, 200, false)
-                when (i) {
-                    0 -> binding.albedoImage?.setImageBitmap(thumbnail)
-                    1 -> binding.normalImage?.setImageBitmap(thumbnail)
-                    2 -> binding.heightImage?.setImageBitmap(thumbnail)
+            // Update UI on main thread
+            withContext(Dispatchers.Main) {
+
+                // For 2D PhotoView
+                for (i in processedImages.indices) {
+                    when (i) {
+                        0 -> {
+                            binding.albedoImage?.setImageBitmap(thumbnails[i])
+                            // Set default image for Photoview
+                            binding.photoView?.setImageBitmap(processedImages[i])
+                        }
+                        1 -> binding.normalImage?.setImageBitmap(thumbnails[i])
+                        2 -> binding.heightImage?.setImageBitmap(thumbnails[i])
+                    }
                 }
-
-                // Add bitmap to global list for easy access
-                processedImages.add(bitmap)
             }
         }
 
 
+        // Choose among 3 Material Map Card Options
         val mapOptions = listOf(binding.albedoMap, binding.normalMap, binding.heightMap)
         // Set albedo map as default selected option
         var selectedMapOption: MaterialCardView? = binding.albedoMap
         selectedMapOption?.strokeWidth = 4
 
         // Handle map option clicks
-        for (mapOption in mapOptions) {
-            mapOption?.setOnClickListener {
+        for (i in mapOptions.indices) {
+            mapOptions[i]?.setOnClickListener {
+                Log.d("PreviewFragment", "Processed Images length: ${processedImages.size}")
 
                 // If user clicks the same card → do nothing
-                if (mapOption == selectedMapOption) return@setOnClickListener
+                if (mapOptions[i] == selectedMapOption) return@setOnClickListener
 
                 // Unselect previous
                 selectedMapOption?.let { prev ->
@@ -96,13 +122,76 @@ class PreviewFragment: Fragment() {
                     duration = 200
                     addUpdateListener { animator ->
                         val value = animator.animatedValue as Int
-                        mapOption.strokeWidth = value
+                        mapOptions[i]?.strokeWidth = value
                     }
                     start()
                 }
 
-                selectedMapOption = mapOption
+                // Change the PhotoView image based on the selected option
+                if(processedImages.size == 3){
+                    Log.d("PreviewFragment", "Changing image to ${mapOptions[i]}")
+                    binding.photoView?.setImageBitmap(processedImages[i])
+                }
+
+                // Update selected option
+                selectedMapOption = mapOptions[i]
             }
+        }
+
+
+        // Download all 3 material maps to phone's photo gallery
+        binding.downloadBtn?.setOnClickListener {
+            viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    processedImagePaths.forEach { path ->
+                        val bitmap = BitmapFactory.decodeFile(path)
+
+                        val originalName = File(path).nameWithoutExtension
+                        val filename = "${originalName}_${System.currentTimeMillis()}.png" // make sure file name is unique
+                        saveImageToGallery(requireContext(), bitmap, filename)
+
+                        bitmap.recycle()
+                    }
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), "Export complete!", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), "Export failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+
+        // Back to Gallery Button
+        binding.backBtn?.setOnClickListener {
+            val action = PreviewFragmentDirections.actionPreviewFragmentToGalleryFragment()
+            findNavController().navigate(action)
+        }
+    }
+
+
+    // Save the bitmap to phone's photo gallery
+    fun saveImageToGallery(context: Context, bitmap: Bitmap, filename: String) {
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, filename)
+            put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+            put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES  + "/OctaGO") // folder name
+            put(MediaStore.Images.Media.IS_PENDING, 1) // To make sure incomplete file is not shown
+        }
+
+        val resolver = context.contentResolver
+        val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+
+        uri?.let {
+            val outputStream = resolver.openOutputStream(it)
+            outputStream?.use { stream ->
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+            }
+
+            contentValues.clear()
+            contentValues.put(MediaStore.Images.Media.IS_PENDING, 0)
+            resolver.update(uri, contentValues, null, null)
         }
     }
 
