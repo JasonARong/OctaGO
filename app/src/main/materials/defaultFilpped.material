@@ -1,0 +1,50 @@
+material {
+    name : "LitMaterial",
+    shadingModel : lit,
+    requires : [
+        uv0,
+        tangents
+    ],
+    parameters : [
+    {
+        type : sampler2d,
+        name : baseColor
+    },
+    {
+        type : sampler2d,
+        name : normal
+    },
+    {
+        type : float,
+        name : roughness
+    },
+    {
+        type : float,
+        name : metallic
+    },
+    {
+        type : float,
+        name : reflectance
+    }
+]
+}
+
+fragment {
+    void material(inout MaterialInputs material) {
+        // Rotate UVs by 180°
+        vec2 rotatedUV = vec2(1.0 - getUV0().x, 1.0 - getUV0().y);
+
+        // --- Normal map ---
+        vec3 n = texture(materialParams_normal, rotatedUV).xyz * 2.0 - 1.0;
+        material.normal = normalize(n);
+
+        prepareMaterial(material);
+
+        // --- Albedo ---
+        material.baseColor = texture(materialParams_baseColor, rotatedUV);
+
+        material.roughness = materialParams.roughness;
+        material.metallic = materialParams.metallic;
+        material.reflectance = materialParams.reflectance;
+    }
+}

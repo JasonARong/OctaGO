@@ -1,0 +1,55 @@
+material {
+    name : "LitMaterial",
+    shadingModel : lit,
+    requires : [
+        uv0
+    ],
+    parameters : [
+    {
+        type : sampler2d,
+        name : baseColor
+    },
+    {
+        type : sampler2d,
+        name : normal
+    },
+    {
+        type : sampler2d,
+        name : height
+    },
+    {
+        type : float,
+        name : roughness
+    },
+    {
+        type : float,
+        name : metallic
+    },
+    {
+        type : float,
+        name : reflectance
+    }
+]
+}
+
+fragment {
+    void material(inout MaterialInputs material) {
+        prepareMaterial(material);
+
+        // Sample height map
+        float height = texture(materialParams_height, getUV0()).r; // usually grayscale → use .r channel
+
+        // Apply parallax mapping (simple version)
+        vec2 viewDir = vec2(0.0, 0.0); // optional → for sphere, this can be getNormal() or getWorldPosition
+
+        // Simple offset by height (scaled for strength)
+        vec2 parallaxUV = getUV0() + viewDir * (height - 0.5) * 0.1;  // 0.1 → height scale (tune this!)
+
+        material.baseColor = texture(materialParams_baseColor, parallaxUV);
+        material.normal = normalize(texture(materialParams_normal, parallaxUV).xyz * 2.0 - 1.0);
+
+        material.roughness = materialParams.roughness;
+        material.metallic = materialParams.metallic;
+        material.reflectance = materialParams.reflectance;
+    }
+}

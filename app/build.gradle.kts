@@ -82,8 +82,10 @@ dependencies {
     // Zoomable Photoview
     implementation(libs.photoview)
 
-    // 3D Render Scene View
-    implementation(libs.sceneview)
+    // 3D Render Filament
+    implementation(libs.filament.android)
+    implementation(libs.filament.utils.android)
+
 
     // Feature Modules
     implementation(project(":core"))

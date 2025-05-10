@@ -16,6 +16,15 @@
         app:layout_constraintGuide_end="300dp" />
 
     <!--=================== Left Preview Section ===================-->
+    <SurfaceView
+        android:id="@+id/surfaceView"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"
+        app:layout_constraintStart_toStartOf="@+id/photoView"
+        android:visibility="visible"
+        android:alpha="0"/>
+
     <com.github.chrisbanes.photoview.PhotoView
         android:id="@+id/photoView"
         android:layout_width="0dp"
@@ -25,15 +34,13 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="visible"
+        android:alpha="1"/>
 
-<!--    <io.github.sceneview.SceneView-->
-<!--        android:id="@+id/sceneView"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="match_parent"-->
-<!--        android:background="@color/dark_blue_a20"-->
-<!--        app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"-->
-<!--        app:layout_constraintStart_toStartOf="@+id/photoView" />-->
+
 
     <ImageButton
         android:id="@+id/backBtn"
@@ -142,17 +149,61 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/textView6"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/toggleContainer"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:layout_marginStart="@dimen/gap_large"
-        android:layout_marginTop="28dp"
-        android:text="Material Maps"
-        android:textColor="@color/white"
-        android:textSize="@dimen/text_size_large"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/bg_round_background"
+        android:backgroundTint="@color/dark_blue_a20"
+        android:elevation="4dp"
+        android:padding="4dp"
         app:layout_constraintStart_toStartOf="@+id/sectionGuideline"
-        app:layout_constraintTop_toTopOf="@+id/view" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Sliding highlight -->
+        <View
+            android:id="@+id/highlightView"
+            android:layout_width="68dp"
+            android:layout_height="match_parent"
+            android:layout_margin="0dp"
+            android:background="@drawable/bg_round_background"
+            android:backgroundTint="@color/dark_blue_a10"
+
+            android:layout_gravity="center_vertical"/>
+
+        <!-- MAPS Button -->
+        <TextView
+            android:id="@+id/mapsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:paddingHorizontal="@dimen/gap_medium"
+            android:text="MAPS"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_size_medium"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- 3D PREVIEW Button -->
+        <TextView
+            android:id="@+id/previewButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:paddingHorizontal="@dimen/gap_medium"
+            android:text="3D PREVIEW"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_size_medium"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/mapsButton"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
     <androidx.constraintlayout.helper.widget.Flow
@@ -162,13 +213,13 @@
         android:layout_marginStart="@dimen/gap_large"
         android:layout_marginTop="@dimen/gap_large"
         android:layout_marginEnd="@dimen/gap_large"
+        android:visibility="visible"
         app:constraint_referenced_ids="albedoMap,normalMap,heightMap"
         app:flow_horizontalGap="@dimen/gap_small"
         app:flow_wrapMode="chain"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/sectionGuideline"
-        app:layout_constraintTop_toBottomOf="@+id/textView6"
-        android:visibility="visible"/>
+        app:layout_constraintTop_toBottomOf="@+id/toggleContainer" />
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/albedoMap"
         android:layout_width="0dp"

@@ -301,7 +301,7 @@ class MaterialMapGenerator (
         val smoothedHeight = Mat()
         Imgproc.bilateralFilter(heightMap, smoothedHeight, 9, 75.0, 75.0)
 
-        var finalHeightMap = balancedHeightEnhance(smoothedHeight)
+        var finalHeightMap = balancedHeightEnhance(heightMap)
 
         // Clean up temporary matrices
         normalMapFloat.release()
@@ -312,9 +312,9 @@ class MaterialMapGenerator (
         dzdx.release()
         dzdy.release()
         smoothedHeight.release()
-        heightMap.release()
+//        heightMap.release()
 
-        return finalHeightMap
+        return heightMap
     }
     private fun solvePoissonEquation(dzdx: Mat, dzdy: Mat): Mat {
         val size = dzdx.size()
@@ -409,23 +409,57 @@ class MaterialMapGenerator (
 
         return heightMap
     }
-    private fun balancedHeightEnhance(input: Mat): Mat {
+
+    /**
+     * Enhanced function to process height maps with resolution-aware parameters
+     *
+     * @param input Input height map as OpenCV Mat
+     * @param blurRadius Relative blur radius (percentage of image width, default 0.05 = 5%)
+     * @param detailStrength Detail enhancement strength (default 1.5)
+     * @param noiseThreshold Threshold to suppress noise (default 0.05)
+     * @return Enhanced height map with preserved details and reduced noise
+     */
+    private fun balancedHeightEnhance(
+        input: Mat,
+        blurRadius: Double = 0.01,
+        detailStrength: Double = 1.5,
+        noiseThreshold: Double = 0.05
+    ): Mat {
         // Convert to float for accuracy
         val input32F = Mat()
         input.convertTo(input32F, CvType.CV_32F)
 
-        // Blur the base shape (remove low-frequency lighting)
+        // Calculate resolution-appropriate blur size (odd number)
+        val width = input.width()
+        val blurSize = (width * blurRadius).toInt()
+        val adjustedBlurSize = if (blurSize % 2 == 0) blurSize + 1 else blurSize
+
+        // Blur the base shape (low-frequency)
         val blurred = Mat()
-        Imgproc.GaussianBlur(input32F, blurred, Size(51.0, 51.0), 0.0)
+        Imgproc.GaussianBlur(input32F, blurred, Size(adjustedBlurSize.toDouble(), adjustedBlurSize.toDouble()), 0.0)
 
         // Extract detail (high-pass)
         val detail = Mat()
         Core.subtract(input32F, blurred, detail)
 
-        // Slightly amplify the detail
+        // Apply noise threshold
+        val thresholdMask = Mat()
+        Core.absdiff(detail, Scalar(0.0), thresholdMask)
+        Core.compare(thresholdMask, Scalar(noiseThreshold * Core.mean(thresholdMask).`val`[0]), thresholdMask, Core.CMP_GT)
+        thresholdMask.convertTo(thresholdMask, CvType.CV_32F, 1.0/255.0)
+        Core.multiply(detail, thresholdMask, detail)
+
+        // Use local gradient magnitude for better detail weighting
+        val gradX = Mat()
+        val gradY = Mat()
+        Imgproc.Sobel(input32F, gradX, CvType.CV_32F, 1, 0, 3)
+        Imgproc.Sobel(input32F, gradY, CvType.CV_32F, 0, 1, 3)
+
         val detailWeight = Mat()
-        Imgproc.Sobel(input32F, detailWeight, CvType.CV_32F, 1, 1)
-        Core.normalize(detailWeight, detailWeight, 0.0, 2.0, Core.NORM_MINMAX)
+        Core.magnitude(gradX, gradY, detailWeight)
+        Core.normalize(detailWeight, detailWeight, 0.0, detailStrength, Core.NORM_MINMAX)
+
+        // Apply adaptive detail enhancement
         Core.multiply(detail, detailWeight, detail)
 
         // Add detail back to base to restore surface
@@ -437,11 +471,15 @@ class MaterialMapGenerator (
         Core.normalize(combined, normalized, 0.0, 255.0, Core.NORM_MINMAX)
         normalized.convertTo(normalized, CvType.CV_8UC1)
 
+        // Release resources
         input32F.release()
         blurred.release()
         detail.release()
         combined.release()
         detailWeight.release()
+        gradX.release()
+        gradY.release()
+        thresholdMask.release()
 
         return normalized
     }

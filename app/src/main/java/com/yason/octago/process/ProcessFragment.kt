@@ -38,6 +38,8 @@ import androidx.navigation.fragment.findNavController
 import com.yason.core.R
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
+import kotlin.math.cos
+import kotlin.math.sin
 
 
 class ProcessFragment : Fragment() {
@@ -109,7 +111,7 @@ class ProcessFragment : Fragment() {
                 val y = (rotatedBitmap.height - side) / 2
                 val croppedBitmap = Bitmap.createBitmap(rotatedBitmap, x, y, side, side)
 
-                fullImages.add(croppedBitmap.scale(1080, 1080))
+                fullImages.add(croppedBitmap.scale(720, 720)) // change resolution
                 thumbnails.add(croppedBitmap.scale(400, 400))
             }
 
@@ -290,27 +292,44 @@ class ProcessFragment : Fragment() {
         } as MutableList<Bitmap>
     }
 
-    private fun getLightDirections(): List<FloatArray> = listOf(
+
+/*    private fun getLightDirections(): List<FloatArray> = listOf(
         // For testing
-//        floatArrayOf(1.0f, 0.0f, 0.5f), // right
-//        floatArrayOf(0.0f, -1.0f, 0.5f), // top right
-//        floatArrayOf(-1.0f, 0.0f, 0.5f), // top
-//        floatArrayOf(0.0f, 1.0f, 0.5f), // top left
-//        floatArrayOf(1.0f, 1.0f, 0.5f), // left
-//        floatArrayOf(-1.0f, 1.0f, 0.5f), // left bottom
-//        floatArrayOf(-1.0f, -1.0f, 0.5f), // bottom
-//        floatArrayOf(1.0f, -1.0f, 0.5f) // bottom right
+        floatArrayOf(1.0f, 0.0f, 0.5f),
+        floatArrayOf(1.0f, -1.0f, 0.5f),
+        floatArrayOf(0.0f, -1.0f, 0.5f),
+        floatArrayOf(-1.0f, -1.0f, 0.5f),
+        floatArrayOf(-1.0f, 0.0f, 0.5f),
+        floatArrayOf(-1.0f, 1.0f, 0.5f),
+        floatArrayOf(0.0f, 1.0f, 0.5f),
+        floatArrayOf(1.0f, 1.0f, 0.5f)
 
         // Actual light directions of the ESP lighting system
-        floatArrayOf(0.8165f, 0.3368f, 0.4695f),  // right (rotated)
-        floatArrayOf(0.3368f, 0.8165f, 0.4695f),  // top right
-        floatArrayOf(-0.3368f, 0.8165f, 0.4695f), // top
-        floatArrayOf(-0.8165f, 0.3368f, 0.4695f), // top left
-        floatArrayOf(-0.8165f, -0.3368f, 0.4695f),// left
-        floatArrayOf(-0.3368f, -0.8165f, 0.4695f),// bottom left
-        floatArrayOf(0.3368f, -0.8165f, 0.4695f), // bottom
-        floatArrayOf(0.8165f, -0.3368f, 0.4695f)  // bottom right
-    )
+//        floatArrayOf(0.8165f, 0.3368f, 0.4695f),  // direction 0
+//        floatArrayOf(0.6036f, 0.6036f, 0.4695f),  // direction 1
+//        floatArrayOf(-0.3368f, 0.8165f, 0.4695f), // direction 2
+//        floatArrayOf(-0.8165f, 0.3368f, 0.4695f), // direction 3
+//        floatArrayOf(-0.8165f, -0.3368f, 0.4695f),// direction 4
+//        floatArrayOf(-0.6036f, -0.6036f, 0.4695f),// direction 5
+//        floatArrayOf(0.3368f, -0.8165f, 0.4695f), // direction 6
+//        floatArrayOf(0.8165f, -0.3368f, 0.4695f)  // direction 7
+    )*/
+
+    private fun getLightDirections(): List<FloatArray> {
+        val zComponent = 0.4695f  // sin(28°)
+        val xyScale = 0.8829f     // cos(28°)
+
+        return listOf(
+            floatArrayOf(xyScale * cos(Math.toRadians(22.5)).toFloat(), xyScale * sin(Math.toRadians(22.5)).toFloat(), zComponent), // 22.5°
+            floatArrayOf(xyScale * cos(Math.toRadians(67.5)).toFloat(), xyScale * sin(Math.toRadians(67.5)).toFloat(), zComponent), // 67.5°
+            floatArrayOf(xyScale * cos(Math.toRadians(112.5)).toFloat(), xyScale * sin(Math.toRadians(112.5)).toFloat(), zComponent), // 112.5°
+            floatArrayOf(xyScale * cos(Math.toRadians(157.5)).toFloat(), xyScale * sin(Math.toRadians(157.5)).toFloat(), zComponent), // 157.5°
+            floatArrayOf(xyScale * cos(Math.toRadians(202.5)).toFloat(), xyScale * sin(Math.toRadians(202.5)).toFloat(), zComponent), // 202.5°
+            floatArrayOf(xyScale * cos(Math.toRadians(247.5)).toFloat(), xyScale * sin(Math.toRadians(247.5)).toFloat(), zComponent), // 247.5°
+            floatArrayOf(xyScale * cos(Math.toRadians(292.5)).toFloat(), xyScale * sin(Math.toRadians(292.5)).toFloat(), zComponent), // 292.5°
+            floatArrayOf(xyScale * cos(Math.toRadians(337.5)).toFloat(), xyScale * sin(Math.toRadians(337.5)).toFloat(), zComponent) // 337.5°
+        )
+    }
 
 
     // Generate material maps from the 8 bitmap images
@@ -359,10 +378,10 @@ class ProcessFragment : Fragment() {
         binding.loadingOverlay!!.animate()
             .alpha(if (visible) 1f else 0f)
             .setDuration(300)
-            .withStartAction {
+            .withStartAction { // if fade in overlay, set view to visible in the beginning
                 if (visible) binding.loadingOverlay!!.visibility = View.VISIBLE
             }
-            .withEndAction {
+            .withEndAction { // if fade out overlay, set view to gone at the end
                 if (!visible) binding.loadingOverlay!!.visibility = View.GONE
             }
             .start()

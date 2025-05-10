@@ -572,8 +572,7 @@
         android:textSize="@dimen/text_size_large"
         android:textColor="@color/white"
         android:padding="@dimen/gap_medium"
-        app:cornerRadius="8dp"
-        app:rippleColor="@color/white"/>
+        app:cornerRadius="8dp" />
     <com.google.android.material.button.MaterialButton
         android:id="@+id/processBtn"
         android:layout_width="0dp"
@@ -583,8 +582,7 @@
         android:textSize="@dimen/text_size_large"
         android:textColor="@color/green"
         android:padding="@dimen/gap_medium"
-        app:cornerRadius="8dp"
-        app:rippleColor="@color/white"/>
+        app:cornerRadius="8dp" />
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
