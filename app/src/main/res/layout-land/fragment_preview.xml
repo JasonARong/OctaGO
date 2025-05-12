@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -20,27 +19,124 @@
         android:id="@+id/surfaceView"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"
-        app:layout_constraintStart_toStartOf="@+id/photoView"
+        android:alpha="0"
         android:visibility="visible"
-        android:alpha="0"/>
+        app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"
+        app:layout_constraintStart_toStartOf="@+id/photoView" />
 
     <com.github.chrisbanes.photoview.PhotoView
         android:id="@+id/photoView"
         android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:alpha="1"
+        android:clickable="true"
+        android:focusable="true"
         android:scaleType="center"
         android:src="@drawable/ic_launcher_background"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:clickable="true"
-        android:focusable="true"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/uiOverlay"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"
+        app:layout_constraintStart_toStartOf="parent"
         android:visibility="visible"
-        android:alpha="1"/>
+        android:alpha="1">
+
+        <ImageButton
+            android:id="@+id/moreOptionsBtn"
+            android:layout_width="@dimen/image_btn_size"
+            android:layout_height="@dimen/image_btn_size"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="@dimen/gap_large"
+            android:alpha="0.4"
+            android:background="@drawable/bg_round_background"
+            android:contentDescription="@string/more_options_btn"
+            android:src="@drawable/ic_dots_horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/light_grey" />
+
+        <ImageButton
+            android:id="@+id/mapBtn"
+            android:layout_width="@dimen/image_btn_size"
+            android:layout_height="@dimen/image_btn_size"
+            android:layout_marginStart="@dimen/gap_large"
+            android:layout_marginBottom="16dp"
+            android:alpha="0.4"
+            android:background="@drawable/bg_round_background"
+            android:contentDescription="Location"
+            android:src="@drawable/ic_map_marker"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:tint="@color/light_grey" />
+
+        <androidx.constraintlayout.helper.widget.Flow
+            android:id="@+id/threeBtnFlow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/bg_round_background"
+            android:paddingHorizontal="@dimen/gap_small"
+            app:constraint_referenced_ids="likeBtn,addFolderBtn,downloadBtn"
+            app:flow_horizontalGap="@dimen/gap_small"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <ImageButton
+            android:id="@+id/likeBtn"
+            android:layout_width="@dimen/image_btn_size"
+            android:layout_height="@dimen/image_btn_size"
+            android:alpha="0.4"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/map_btn"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_heart"
+            app:tint="@color/light_grey" />
+
+        <ImageButton
+            android:id="@+id/addFolderBtn"
+            android:layout_width="@dimen/image_btn_size"
+            android:layout_height="@dimen/image_btn_size"
+            android:alpha="0.4"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/map_btn"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_folder_plus"
+            app:tint="@color/light_grey" />
+
+        <ImageButton
+            android:id="@+id/downloadBtn"
+            android:layout_width="@dimen/image_btn_size"
+            android:layout_height="@dimen/image_btn_size"
+            android:background="@drawable/ripple_button"
+            android:contentDescription="@string/map_btn"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_download"
+            app:tint="@color/light_grey" />
+
+        <ImageButton
+            android:id="@+id/eightPhotosBtn"
+            android:layout_width="@dimen/image_btn_size"
+            android:layout_height="@dimen/image_btn_size"
+            android:layout_marginEnd="@dimen/gap_large"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/bg_round_background"
+            android:contentDescription="@string/back_btn"
+            android:src="@drawable/ic_image_multiple"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:tint="@color/light_grey" />
 
 
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ImageButton
         android:id="@+id/backBtn"
@@ -55,89 +151,9 @@
         app:layout_constraintTop_toTopOf="parent"
         app:tint="@color/light_grey" />
 
-    <ImageButton
-        android:id="@+id/moreOptionsBtn"
-        android:layout_width="@dimen/image_btn_size"
-        android:layout_height="@dimen/image_btn_size"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="@dimen/gap_large"
-        android:background="@drawable/bg_round_background"
-        android:src="@drawable/ic_dots_horizontal"
-        app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"
-        app:layout_constraintTop_toTopOf="parent"
-        app:tint="@color/light_grey"
-        android:contentDescription="@string/more_options_btn"
-        android:alpha="0.4"/>
 
-    <ImageButton
-        android:id="@+id/mapBtn"
-        android:layout_width="@dimen/image_btn_size"
-        android:layout_height="@dimen/image_btn_size"
-        android:layout_marginStart="@dimen/gap_large"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/bg_round_background"
-        android:contentDescription="Location"
-        android:src="@drawable/ic_map_marker"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:tint="@color/light_grey"
-        android:alpha="0.4"/>
 
-    <androidx.constraintlayout.helper.widget.Flow
-        android:id="@+id/two_btn_flow"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/bg_round_background"
-        android:paddingHorizontal="@dimen/gap_small"
-        app:constraint_referenced_ids="likeBtn,addFolderBtn,downloadBtn"
-        app:flow_horizontalGap="@dimen/gap_small"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"
-        app:layout_constraintStart_toStartOf="parent" />
 
-    <ImageButton
-        android:id="@+id/likeBtn"
-        android:layout_width="@dimen/image_btn_size"
-        android:layout_height="@dimen/image_btn_size"
-        android:background="@android:color/transparent"
-        android:scaleType="centerInside"
-        android:src="@drawable/ic_heart"
-        app:tint="@color/light_grey"
-        android:contentDescription="@string/map_btn"
-        android:alpha="0.4"/>
-    <ImageButton
-        android:id="@+id/addFolderBtn"
-        android:layout_width="@dimen/image_btn_size"
-        android:layout_height="@dimen/image_btn_size"
-        android:background="@android:color/transparent"
-        android:scaleType="centerInside"
-        android:src="@drawable/ic_folder_plus"
-        app:tint="@color/light_grey"
-        android:contentDescription="@string/map_btn"
-        android:alpha="0.4"/>
-    <ImageButton
-        android:id="@+id/downloadBtn"
-        android:layout_width="@dimen/image_btn_size"
-        android:layout_height="@dimen/image_btn_size"
-        android:background="@drawable/ripple_button"
-        android:scaleType="centerInside"
-        android:src="@drawable/ic_download"
-        app:tint="@color/light_grey"
-        android:contentDescription="@string/map_btn"/>
-
-    <ImageButton
-        android:id="@+id/eightPhotosBtn"
-        android:layout_width="@dimen/image_btn_size"
-        android:layout_height="@dimen/image_btn_size"
-        android:layout_marginEnd="@dimen/gap_large"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/bg_round_background"
-        android:contentDescription="@string/back_btn"
-        android:src="@drawable/ic_image_multiple"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/sectionGuideline"
-        app:tint="@color/light_grey" />
 
     <!--=================== Right Process Section ===================-->
     <View
@@ -167,11 +183,11 @@
             android:id="@+id/highlightView"
             android:layout_width="68dp"
             android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
             android:layout_margin="0dp"
             android:background="@drawable/bg_round_background"
-            android:backgroundTint="@color/dark_blue_a10"
 
-            android:layout_gravity="center_vertical"/>
+            android:backgroundTint="@color/dark_blue_a10" />
 
         <!-- MAPS Button -->
         <TextView
@@ -220,13 +236,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/sectionGuideline"
         app:layout_constraintTop_toBottomOf="@+id/toggleContainer" />
+
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/albedoMap"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:strokeWidth="0dp"
+        android:backgroundTint="@color/dark_blue_a0"
         app:strokeColor="@color/green"
-        android:backgroundTint="@color/dark_blue_a0">
+        app:strokeWidth="0dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -237,18 +254,18 @@
                 android:id="@+id/albedoImage"
                 android:layout_width="match_parent"
                 android:layout_height="80dp"
+                android:contentDescription="Albedo Map"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_launcher_background"
-                android:contentDescription="Albedo Map" />
+                android:src="@drawable/ic_launcher_background" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
+                android:paddingVertical="@dimen/gap_small"
                 android:text="Albedo"
                 android:textColor="@color/white"
-                android:paddingVertical="@dimen/gap_small"
-                android:textSize="@dimen/text_size_small"/>
+                android:textSize="@dimen/text_size_small" />
 
         </LinearLayout>
 
@@ -339,12 +356,13 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/gap_large"
-        android:layout_marginEnd="@dimen/gap_large"
         android:layout_marginTop="24dp"
-        android:paddingHorizontal="@dimen/gap_medium"
-        android:paddingEnd="36dp"
+        android:layout_marginEnd="@dimen/gap_large"
+        android:alpha="0.4"
         android:backgroundTint="@color/dark_blue_a0"
         android:gravity="center"
+        android:paddingHorizontal="@dimen/gap_medium"
+        android:paddingEnd="36dp"
         android:text="EDIT"
         android:textColor="@color/white"
         android:textSize="@dimen/text_size_large"
@@ -353,8 +371,7 @@
         app:iconGravity="start"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/sectionGuideline"
-        app:layout_constraintTop_toBottomOf="@+id/divider"
-        android:alpha="0.4"/>
+        app:layout_constraintTop_toBottomOf="@+id/divider" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/duplicateBtn"
@@ -362,6 +379,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/gap_large"
         android:layout_marginEnd="@dimen/gap_large"
+        android:alpha="0.4"
         android:backgroundTint="@color/dark_blue_a0"
         android:gravity="center"
         android:paddingHorizontal="@dimen/gap_medium"
@@ -375,8 +393,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/sectionGuideline"
-        app:layout_constraintTop_toBottomOf="@+id/editBtn"
-        android:alpha="0.4"/>
+        app:layout_constraintTop_toBottomOf="@+id/editBtn" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/deleteBtn"
@@ -384,6 +401,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/gap_large"
         android:layout_marginEnd="@dimen/gap_large"
+        android:alpha="0.4"
         android:backgroundTint="@color/dark_blue_a0"
         android:gravity="center"
         android:paddingHorizontal="@dimen/gap_medium"
@@ -393,12 +411,12 @@
         android:textSize="@dimen/text_size_large"
         app:cornerRadius="8dp"
         app:icon="@drawable/ic_delete"
-        app:iconTint="@color/red"
         app:iconGravity="start"
+        app:iconTint="@color/red"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/sectionGuideline"
-        app:layout_constraintTop_toBottomOf="@+id/duplicateBtn"
-        android:alpha="0.4"/>
+        app:layout_constraintTop_toBottomOf="@+id/duplicateBtn" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

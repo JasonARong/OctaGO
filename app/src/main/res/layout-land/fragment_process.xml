@@ -48,7 +48,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.constraintlayout.helper.widget.Flow
-        android:id="@+id/two_btn_flow"
+        android:id="@+id/threeBtnFlow"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/gap_medium"
@@ -572,7 +572,8 @@
         android:textSize="@dimen/text_size_large"
         android:textColor="@color/white"
         android:padding="@dimen/gap_medium"
-        app:cornerRadius="8dp" />
+        app:cornerRadius="8dp"
+        app:rippleColor="?attr/colorControlHighlight"/>
     <com.google.android.material.button.MaterialButton
         android:id="@+id/processBtn"
         android:layout_width="0dp"
@@ -582,7 +583,8 @@
         android:textSize="@dimen/text_size_large"
         android:textColor="@color/green"
         android:padding="@dimen/gap_medium"
-        app:cornerRadius="8dp" />
+        app:cornerRadius="8dp"
+        app:rippleColor="?attr/colorControlHighlight"/>
 
 
     <androidx.constraintlayout.widget.ConstraintLayout

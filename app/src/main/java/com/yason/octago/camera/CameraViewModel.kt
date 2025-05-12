@@ -111,6 +111,18 @@ class CameraViewModel : ViewModel() {
         }
     }
 
+    fun resetCapture(){
+        resetImages()
+        viewModelScope.launch {
+            try{
+                sendPostRequest("reset_capture")
+            } catch(e: Exception){
+                e.printStackTrace()
+            }
+        }
+
+    }
+
     private suspend fun sendPostRequest(path: String) {
         Log.d("CameraViewModel", "Sending Request: POST $path")
         withContext(Dispatchers.IO){

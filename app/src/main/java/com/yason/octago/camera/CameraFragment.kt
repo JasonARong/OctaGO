@@ -24,6 +24,7 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
@@ -31,6 +32,7 @@ import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Environment
+import android.provider.Settings
 import android.util.Size
 import android.view.Surface
 import android.widget.Toast
@@ -46,12 +48,15 @@ import kotlinx.coroutines.launch
 import com.yason.octago.R
 import com.yason.octago.databinding.FragmentCameraBinding
 import com.yason.octago.camera.LightingWebSocketManager
+import com.yason.octago.preview.PreviewFragmentDirections
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import java.io.InputStream
 import java.io.OutputStream
+import java.net.HttpURLConnection
+import java.net.URL
 
 
 class CameraFragment : Fragment() {
@@ -104,34 +109,47 @@ class CameraFragment : Fragment() {
         }
 
 
-        // Start ESP connection monitor
+        // Start ESP connection monitor, no needed, switch to use websocket for monitor
         startConnectionMonitor()
 
 
         // Lighting WebSocket, Listens to shutter button click
         lightingWebSocketManager = LightingWebSocketManager(
             serverUrl = "ws://192.168.4.1:81",
-            onShutterPress = {
+            onShutterPress = { // shutter button pressed, trigger UI button
                 requireActivity().runOnUiThread {
                     binding.captureButton.performClick()
                 }
-            }
+            },
         )
         lightingWebSocketManager.connect()
 
 
         // Connection Button
         binding.connectionBtn.setOnClickListener {
-//            if (allBluetoothPermissionsGranted()) {
-//                if (!isBluetoothSetup){
-//                    setupBluetooth()
-//                }
-//                if (!isEspConnected){
-//                    connectToEspLightingSystem()
-//                }
-//            } else {
-//                requestPermissionLauncher.launch(REQUIRED_BLUETOOTH_PERMISSIONS)
-//            }
+            if(isConnectedToESP){
+                val builder = AlertDialog.Builder(requireContext())
+                builder.setTitle("OctaGO Lighting System is connected")
+                builder.setPositiveButton("Let's Scan Material!", null)
+                val dialog = builder.create()
+                dialog.show()
+            }else{
+                val builder = AlertDialog.Builder(requireContext())
+                builder.setTitle("Connect to OctaGO Lighting System")
+                builder.setMessage("Set your Wi-Fi to \"ESP_Lighting\" ")
+                builder.setPositiveButton("WI-FI Settings") { _, _ ->
+                    startActivity(Intent(Settings.ACTION_WIFI_SETTINGS))
+                }
+                builder.setNegativeButton("Cancel", null)
+                val dialog = builder.create()
+                dialog.show()
+            }
+        }
+
+        // Gallery Button
+        binding.galleryBtn.setOnClickListener {
+            val action = CameraFragmentDirections.actionCameraFragmentToGalleryFragment()
+            findNavController().navigate(action)
         }
 
 
@@ -142,6 +160,15 @@ class CameraFragment : Fragment() {
                     if (shutterClickedCount == 0) { // if first click, light up the first light for correcting exposure and monitor
                         viewModel.readyToCapture()
                         shutterClickedCount++
+
+                        // wait for a while, if no second click, reset the capture
+                        lifecycleScope.launch {
+                            delay(20_000) // wait for 20 seconds
+                            if (shutterClickedCount == 1) {
+                                viewModel.resetCapture()
+                                shutterClickedCount = 0
+                            }
+                        }
                     }
                     else if (shutterClickedCount == 1){ // actually take the 8 photos
                         capture8PhotosWithLightingSystem()
@@ -150,10 +177,9 @@ class CameraFragment : Fragment() {
                 }
                 else{ // if not connected to ESP, use simulated lighting
                     val builder = AlertDialog.Builder(requireContext())
-                    builder.setTitle("Shutter Button")
-                    builder.setMessage("You are not connected to the OctaGO lighting system. Would you still like to scan the material?")
+                    builder.setTitle("Scan material without lighting system?")
 
-                    builder.setPositiveButton("Confirm") { dialog, which ->
+                    builder.setPositiveButton("Scan Material") { dialog, which ->
                         capture8PhotosWithSimulatedLighting()
                     }
                     builder.setNegativeButton("Cancel") { dialog, which ->
@@ -225,7 +251,8 @@ class CameraFragment : Fragment() {
 
         connectionMonitorJob = viewLifecycleOwner.lifecycleScope.launch {
             while (isActive) {
-                val connectionStatus = isConnectedToEsp(requireContext()) // possible missing permission
+//                val connectionStatus = isConnectedToEsp(requireContext()) // possible missing permission
+                val connectionStatus = pingEsp()
 
                 // Update UI if connection status has changed
                 if (connectionStatus != isConnectedToESP) {
@@ -238,6 +265,23 @@ class CameraFragment : Fragment() {
 
                 delay(2000) // Check every 2 seconds
             }
+        }
+    }
+    suspend fun pingEsp(): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val url = URL("http://192.168.4.1/ping")
+            (url.openConnection() as HttpURLConnection).run {
+                requestMethod  = "GET"
+                setRequestProperty("Connection", "close")
+                connectTimeout = 1000
+                readTimeout    = 1000
+                connect()
+                val ok = responseCode == 200
+                disconnect()
+                ok
+            }
+        } catch (e: Exception) {
+            false   // any exception → not reachable
         }
     }
 

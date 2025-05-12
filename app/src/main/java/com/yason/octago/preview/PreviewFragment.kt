@@ -8,6 +8,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.graphics.PixelFormat
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -16,6 +17,7 @@ import android.view.Choreographer
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
@@ -25,6 +27,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import androidx.core.graphics.scale
 import androidx.navigation.fragment.findNavController
+import com.google.android.filament.Colors
 import com.google.android.material.card.MaterialCardView
 import com.google.android.filament.Engine
 import com.google.android.filament.EntityManager
@@ -32,6 +35,8 @@ import com.google.android.filament.IndirectLight
 import com.google.android.filament.LightManager
 import com.google.android.filament.Material
 import com.google.android.filament.MaterialInstance
+import com.google.android.filament.Renderer
+import com.google.android.filament.Skybox
 import com.google.android.filament.Texture
 import com.google.android.filament.TextureSampler
 import com.google.android.filament.utils.ModelViewer
@@ -54,6 +59,9 @@ class PreviewFragment: Fragment() {
     private val binding get() = _binding!!
     private val args: PreviewFragmentArgs by navArgs()
 
+    // UI overlay
+    private var uiOverlayVisibility = true
+
     // 3 Material Maps
     private val processedImages = mutableListOf<Bitmap>()
 
@@ -67,8 +75,12 @@ class PreviewFragment: Fragment() {
     val originalTransform = FloatArray(16)
 
     private var lastTouchX = 0f
+    private var lastTouchY = 0f
+    private val touchSlop = 2f   // For detecting drag vs tap
+//    private val touchSlop by lazy {
+//        ViewConfiguration.get(requireContext()).scaledTouchSlop.toFloat()
+//    }
     private var currentRotationY = 0f
-
     private val sphereScale = 1.3f
 
     companion object {
@@ -158,7 +170,6 @@ class PreviewFragment: Fragment() {
 
 
 
-
         // Choose among 3 Material Map Card Options
         val mapOptions = listOf(binding.albedoMap, binding.normalMap, binding.heightMap)
         // Set albedo map as default selected option
@@ -208,6 +219,31 @@ class PreviewFragment: Fragment() {
 
 
 
+        // Setting UI overlay visibility
+        binding.photoView?.setOnClickListener {
+            Log.d("PreviewFragment", "Photo view surface clicked")
+            if (uiOverlayVisibility == true) {
+                setOverlayVisible(false)
+                uiOverlayVisibility = false
+            } else {
+                setOverlayVisible(true)
+                uiOverlayVisibility = true
+            }
+        }
+
+        binding.surfaceView?.setOnClickListener {
+            Log.d("PreviewFragment", "3d rendering surface clicked")
+            if (uiOverlayVisibility == true) {
+                setOverlayVisible(false)
+                uiOverlayVisibility = false
+            } else {
+                setOverlayVisible(true)
+                uiOverlayVisibility = true
+            }
+        }
+
+
+
         // Download Maps Button
         binding.downloadBtn?.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
@@ -239,6 +275,11 @@ class PreviewFragment: Fragment() {
         }
 
 
+
+
+
+
+
         /* ============================ 3D Rendering  ============================ */
 
         // UI surface view that allow low-level rendering
@@ -248,12 +289,16 @@ class PreviewFragment: Fragment() {
         engine = modelViewer.engine
 
 
+
+
         // Drag to rotate 3d model
-        surfaceView.setOnTouchListener { _, event ->
+        surfaceView.setOnTouchListener { v, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     lastTouchX = event.x
+                    lastTouchY = event.y
                 }
+
                 MotionEvent.ACTION_MOVE -> {
                     val dx = event.x - lastTouchX
                     lastTouchX = event.x
@@ -278,6 +323,17 @@ class PreviewFragment: Fragment() {
                         val finalTransform = multiplyMatrices(scaledRotation, originalTransform)
 
                         transformManager.setTransform(instance, finalTransform)
+                    }
+                }
+                MotionEvent.ACTION_UP -> {
+                    val dx = event.x - lastTouchX
+                    val dy = event.y - lastTouchY
+                    val distanceSq = dx * dx + dy * dy
+                    Log.d("PreviewFragment", "Distance squared: $distanceSq")
+                    Log.d("PreviewFragment", "Touch slop: ${touchSlop * touchSlop}")
+
+                    if (distanceSq < touchSlop * touchSlop) {
+                        v.performClick()  // Real tap, not drag
                     }
                 }
             }
@@ -326,6 +382,14 @@ class PreviewFragment: Fragment() {
 
         modelViewer.scene.indirectLight = indirectLight
 
+
+        // Background Color
+        val sr = 0x11 / 255f  // 17
+        val sg = 0x13 / 255f  // 19
+        val sb = 0x1E / 255f  // 30
+
+        val linear = Colors.toLinear(Colors.RgbType.SRGB, sr, sg, sb)
+        modelViewer.scene.skybox = Skybox.Builder().color(linear[0], linear[1], linear[2], 1f).build(engine)
 
 
         /* ============ Scene setup ============ */
@@ -418,6 +482,22 @@ class PreviewFragment: Fragment() {
             Log.e("MainActivity", "Error setting up model and materials: ${e.message}")
             e.printStackTrace()
         }
+    }
+
+
+
+    // sey UI overlay visibility
+    private fun setOverlayVisible(visible: Boolean) {
+        binding.uiOverlay!!.animate()
+            .alpha(if (visible) 1f else 0f)
+            .setDuration(300)
+            .withStartAction { // if fade in overlay, set view to visible in the beginning
+                if (visible) binding.uiOverlay!!.visibility = View.VISIBLE
+            }
+            .withEndAction { // if fade out overlay, set view to gone at the end
+                if (!visible) binding.uiOverlay!!.visibility = View.GONE
+            }
+            .start()
     }
 
 

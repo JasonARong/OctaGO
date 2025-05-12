@@ -16,15 +16,13 @@
         android:layout_height="48dp"
         android:layout_marginStart="20dp"
         android:layout_marginBottom="20dp"
-        android:background="@drawable/bg_round_background"
+        android:background="@drawable/ripple_button"
         android:contentDescription="navigate to gallery"
-        android:scaleType="centerInside"
-        android:padding="@dimen/gap_medium"
-        android:src="@drawable/bg_round_background"
+        android:src="@drawable/img_rocks2"
+        android:scaleType="centerCrop"
+        android:padding="7dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/previewView"
-        app:tint="@color/light_grey"
-        android:alpha="0.4"/>
+        app:layout_constraintStart_toEndOf="@+id/previewView" />
 
     <TextView
         android:id="@+id/textView2"
@@ -73,7 +71,7 @@
         android:layout_height="48dp"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="20dp"
-        android:background="@drawable/bg_round_background"
+        android:background="@drawable/ripple_button"
         android:contentDescription="establish connection"
         android:scaleType="centerInside"
         android:src="@drawable/ic_wifi"
