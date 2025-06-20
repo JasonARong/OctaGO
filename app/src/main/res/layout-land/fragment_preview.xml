@@ -223,19 +223,19 @@
 
 
     <androidx.constraintlayout.helper.widget.Flow
-        android:id="@+id/flow"
+        android:id="@+id/materialMapflow"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/gap_large"
         android:layout_marginTop="@dimen/gap_large"
         android:layout_marginEnd="@dimen/gap_large"
-        android:visibility="visible"
         app:constraint_referenced_ids="albedoMap,normalMap,heightMap"
         app:flow_horizontalGap="@dimen/gap_small"
         app:flow_wrapMode="chain"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/sectionGuideline"
-        app:layout_constraintTop_toBottomOf="@+id/toggleContainer" />
+        app:layout_constraintTop_toBottomOf="@+id/toggleContainer"
+        android:visibility="visible"/>
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/albedoMap"
@@ -341,15 +341,138 @@
 
     </com.google.android.material.card.MaterialCardView>
 
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/modelOptions"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/gap_large"
+        android:layout_marginTop="@dimen/gap_large"
+        android:layout_marginEnd="@dimen/gap_large"
+        android:background="@drawable/bg_rounded_background"
+        android:backgroundTint="@color/dark_blue_a0"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/sectionGuideline"
+        app:layout_constraintTop_toBottomOf="@+id/toggleContainer"
+        android:visibility="invisible"
+        android:alpha="0">
+
+
+        <!-- Sliding highlight -->
+        <View
+            android:id="@+id/modelHighlightView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="0dp"
+            android:background="@drawable/bg_rounded_background"
+            android:backgroundTint="@color/green"
+            app:layout_constraintDimensionRatio="1:1" />
+
+        <!-- ImageView 1 -->
+        <ImageView
+            android:id="@+id/modelBtn1"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:padding="24dp"
+            android:src="@drawable/ic_ellipse"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toStartOf="@id/modelBtn2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- ImageView 2 -->
+        <ImageView
+            android:id="@+id/modelBtn2"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:padding="22dp"
+            android:src="@drawable/ic_cube"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toStartOf="@id/modelBtn3"
+            app:layout_constraintStart_toEndOf="@id/modelBtn1"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- ImageView 3 -->
+        <ImageView
+            android:id="@+id/modelBtn3"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:padding="20dp"
+            android:src="@drawable/ic_plane"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/modelBtn2"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- ImageView 4 -->
+<!--        <ImageView-->
+<!--            android:id="@+id/modelBtn4"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="0dp"-->
+<!--            app:layout_constraintDimensionRatio="1:1"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintStart_toEndOf="@id/modelBtn3"-->
+<!--            app:layout_constraintTop_toTopOf="parent" />-->
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <com.google.android.flexbox.FlexboxLayout
+        android:id="@+id/modelOptionsText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/gap_medium"
+        android:paddingHorizontal="@dimen/gap_large"
+        app:flexDirection="row"
+        app:justifyContent="space_between"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/sectionGuideline"
+        app:layout_constraintTop_toBottomOf="@+id/modelOptions"
+        android:visibility="invisible"
+        android:alpha="0">
+
+        <TextView
+            android:id="@+id/sphereText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+
+            android:text="Sphere"
+            android:textColor="@color/white" />
+
+        <TextView
+            android:id="@+id/cubeText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:text="Cube"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_size_medium" />
+
+        <TextView
+            android:id="@+id/planeText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:layout_marginEnd="24dp"
+            android:text="Plane"
+            android:textColor="@color/white" />
+
+
+    </com.google.android.flexbox.FlexboxLayout>
+
+
     <View
         android:id="@+id/divider"
         android:layout_width="0dp"
         android:layout_height="1dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="220dp"
         android:background="@color/dark_grey"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/sectionGuideline"
-        app:layout_constraintTop_toBottomOf="@+id/flow" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/editBtn"

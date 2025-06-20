@@ -159,6 +159,7 @@ class ProcessFragment : Fragment() {
         }
 
         binding.exportToPhotoBtn?.setOnClickListener {
+            Toast.makeText(requireContext(), "Exporting...", Toast.LENGTH_SHORT).show()
             viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
                 try {
                     imagePaths.forEach { path ->
@@ -179,6 +180,12 @@ class ProcessFragment : Fragment() {
                     }
                 }
             }
+        }
+
+        // Skip Button
+        binding.skipBtn?.setOnClickListener {
+            val action = ProcessFragmentDirections.actionProcessFragmentToGalleryFragment()
+            findNavController().navigate(action)
         }
 
         // Back Button

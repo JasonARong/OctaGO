@@ -76,7 +76,7 @@
         android:background="@drawable/bg_round_background"
         android:contentDescription="establish connection"
         android:scaleType="centerInside"
-        android:src="@drawable/bluetooth"
+        android:src="@drawable/ic_wifi"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/previewView"
         app:tint="@color/light_grey" />

@@ -7,8 +7,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Matrix
-import android.graphics.PixelFormat
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -17,8 +16,8 @@ import android.view.Choreographer
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewConfiguration
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -35,7 +34,6 @@ import com.google.android.filament.IndirectLight
 import com.google.android.filament.LightManager
 import com.google.android.filament.Material
 import com.google.android.filament.MaterialInstance
-import com.google.android.filament.Renderer
 import com.google.android.filament.Skybox
 import com.google.android.filament.Texture
 import com.google.android.filament.TextureSampler
@@ -46,7 +44,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.yason.octago.process.ProcessFragmentDirections
 import kotlin.math.max
 import kotlin.math.floor
 import java.io.File
@@ -67,6 +64,7 @@ class PreviewFragment: Fragment() {
 
     // For toggle between maps and 3d preview
     private var selectedView: View? = null
+    private var selectedModelOption: ImageView? = null
 
     // 3D rendering
     lateinit var modelViewer: ModelViewer
@@ -74,14 +72,12 @@ class PreviewFragment: Fragment() {
     private var rotationAngle = 0.0f
     val originalTransform = FloatArray(16)
 
+    private val rotationSensitivity = 0.2f
     private var lastTouchX = 0f
     private var lastTouchY = 0f
     private val touchSlop = 2f   // For detecting drag vs tap
-//    private val touchSlop by lazy {
-//        ViewConfiguration.get(requireContext()).scaledTouchSlop.toFloat()
-//    }
     private var currentRotationY = 0f
-    private val sphereScale = 1.3f
+    private val modelScale = 1.3f
 
     companion object {
         init {
@@ -147,6 +143,7 @@ class PreviewFragment: Fragment() {
         }
 
 
+
         // Initialize with mapsButton selected
         view.post {
             animateToggle(binding.mapsButton!!, initial = true)
@@ -158,6 +155,10 @@ class PreviewFragment: Fragment() {
                 animateToggle(it)
                 setViewVisible(binding.photoView!!, true) // show photoView
                 setViewVisible(binding.surfaceView!!, false) // hide 3d rendering
+
+                setViewVisible(binding.materialMapflow!!, true) // show material map flow
+                setViewVisible(binding.modelOptions!!, false) // hide model options for 3d rendering
+                setViewVisible(binding.modelOptionsText!!, false)
             }
         }
         binding.previewButton?.setOnClickListener { // 3D rendering preview
@@ -165,6 +166,10 @@ class PreviewFragment: Fragment() {
                 animateToggle(it)
                 setViewVisible(binding.surfaceView!!, true) // show 3d rendering
                 setViewVisible(binding.photoView!!, false) // hide photoView
+
+                setViewVisible(binding.modelOptions!!, true) // show model options for 3d rendering
+                setViewVisible(binding.modelOptionsText!!, true)
+                setViewVisible(binding.materialMapflow!!, false) // hide material map flow
             }
         }
 
@@ -246,6 +251,7 @@ class PreviewFragment: Fragment() {
 
         // Download Maps Button
         binding.downloadBtn?.setOnClickListener {
+            Toast.makeText(requireContext(), "Exporting...", Toast.LENGTH_SHORT).show()
             viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
                 try {
                     processedImagePaths.forEach { path ->
@@ -288,11 +294,17 @@ class PreviewFragment: Fragment() {
         modelViewer = ModelViewer(surfaceView)
         engine = modelViewer.engine
 
-
+        // Background Color #11131E dark blue
+        val sr = 0x11 / 255f  // 17
+        val sg = 0x13 / 255f  // 19
+        val sb = 0x1E / 255f  // 30
+        val linear = Colors.toLinear(Colors.RgbType.SRGB, sr, sg, sb)
+        modelViewer.scene.skybox = Skybox.Builder().color(linear[0], linear[1], linear[2], 1f).build(engine)
 
 
         // Drag to rotate 3d model
         surfaceView.setOnTouchListener { v, event ->
+            // TODO: add initial touch position to compare with action up position
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     lastTouchX = event.x
@@ -304,7 +316,7 @@ class PreviewFragment: Fragment() {
                     lastTouchX = event.x
 
                     // Rotate Y based on horizontal drag
-                    currentRotationY += dx * 0.2f  // tune 0.2f for sensitivity
+                    currentRotationY += dx * rotationSensitivity
 
                     // Apply rotation
                     modelViewer.asset?.let { asset ->
@@ -313,7 +325,7 @@ class PreviewFragment: Fragment() {
                         val instance = transformManager.getInstance(root)
 
                         // Scale
-                        val scaleMatrix = float4x4Scale(sphereScale)
+                        val scaleMatrix = float4x4Scale(modelScale)
                         // Rotation
                         val radians = Math.toRadians(currentRotationY.toDouble()).toFloat()
                         val rotationMatrix = float4x4RotationY(radians)
@@ -374,28 +386,19 @@ class PreviewFragment: Fragment() {
         iblTexture.setImage(engine, 0,
             Texture.PixelBufferDescriptor(faceColors, Texture.Format.RGB, Texture.Type.UBYTE)
         )
-
         val indirectLight = IndirectLight.Builder()
             .reflections(iblTexture)
             .intensity(4_000.0f)  // Tune this → 10k~50k good starting range
             .build(engine)
-
         modelViewer.scene.indirectLight = indirectLight
 
 
-        // Background Color
-        val sr = 0x11 / 255f  // 17
-        val sg = 0x13 / 255f  // 19
-        val sb = 0x1E / 255f  // 30
-
-        val linear = Colors.toLinear(Colors.RgbType.SRGB, sr, sg, sb)
-        modelViewer.scene.skybox = Skybox.Builder().color(linear[0], linear[1], linear[2], 1f).build(engine)
 
 
         /* ============ Scene setup ============ */
         try {
             // Load my precompiled filamat file
-            val matPackage = requireContext().assets.open("defaultFilpped.filamat").readBytes()
+            val matPackage = requireContext().assets.open("defaultFlipped.filamat").readBytes()
             val matBuffer = ByteBuffer.allocateDirect(matPackage.size)
             matBuffer.put(matPackage)
             matBuffer.flip()
@@ -405,44 +408,10 @@ class PreviewFragment: Fragment() {
             // Material Instance: allows dynamic parameters (textures, floats, colors)
             val defaultMaterialInstance: MaterialInstance = defaultMaterial.createInstance()
 
-            // Load my 3d model (glb)
-            val byteArray = requireContext().assets.open("sphere.glb").readBytes()
-            val buffer = ByteBuffer.allocateDirect(byteArray.size)
-            buffer.put(byteArray)
-            buffer.flip()
-
-            // Load the model
-            modelViewer.loadModelGlb(buffer)
-            modelViewer.transformToUnitCube() // rescales the model → to fit in the scene/view
-
-            // Save the unit cube transform (contains scale)
-            val transformManager = engine.transformManager
-            val rootInstance = transformManager.getInstance(modelViewer.asset!!.root)
-            transformManager.getTransform(rootInstance, originalTransform)
-
-            // Apply extra 1.3× scale to the sphere
-            val scaleMatrix = float4x4Scale(sphereScale)
-            val enlargedTransform = multiplyMatrices(scaleMatrix, originalTransform)
-            transformManager.setTransform(rootInstance, enlargedTransform)
-
-
-            // Access the loaded asset
-            val asset = modelViewer.asset
-
-            // Check if the asset is loaded
-            if (asset == null) {
-                Log.e("MainActivity", "Failed to load model")
-                return
-            }
-
-            val entities = asset.getEntities()
-            Log.d("MainActivity", "Model loaded successfully with ${entities.size} entities")
-
 
             // Load albedo and normal maps as bitmaps
             val albedoBitmap = BitmapFactory.decodeFile(processedImagePaths[0])
             val normalBitmap = BitmapFactory.decodeFile(processedImagePaths[1])
-
             if (albedoBitmap == null || albedoBitmap.isRecycled) {
                 Log.e("MainActivity", "Failed to load albedo bitmap")
                 return
@@ -451,7 +420,6 @@ class PreviewFragment: Fragment() {
                 Log.e("MainActivity", "Failed to load normal bitmap")
                 return
             }
-
             val albedoTexture = createTextureFromBitmap(albedoBitmap, isSRGB = true) // color accurate
             val normalTexture = createTextureFromBitmap(normalBitmap, isSRGB = false) // Linear → mathematical values
 
@@ -463,24 +431,50 @@ class PreviewFragment: Fragment() {
             defaultMaterialInstance.setParameter("reflectance", 0.8f)
 
 
-            val renderableManager = engine.renderableManager
-            // Apply the material to all entities/models
-            // Iterate through the entities obtained from the asset
-            for (entity in entities) {
-                if (!renderableManager.hasComponent(entity)) continue
 
-                val renderableInstance = renderableManager.getInstance(entity)
-                val primCount = renderableManager.getPrimitiveCount(renderableInstance)
-
-                // Setting defaultMaterialInstance to renderableInstance
-                for (primIndex in 0 until primCount) {
-                    renderableManager.setMaterialInstanceAt(renderableInstance, primIndex, defaultMaterialInstance)
-                }
+            // Load sphere as default model
+            loadModelFromAsset("sphere.glb", defaultMaterialInstance)
+            // UI: sphere option selected by default
+            view.post {
+                animateModelToggle(binding.modelBtn1!!, initial = true)
             }
 
+
+            // Switching models for 3d preview
+            binding.modelBtn1?.setOnClickListener {
+                if(selectedModelOption != it){
+                    animateModelToggle(it as ImageView)
+                    currentRotationY = 0f
+                    loadModelFromAsset("sphere.glb", defaultMaterialInstance)
+                }
+            }
+            binding.modelBtn2?.setOnClickListener {
+                if(selectedModelOption != it){
+                    animateModelToggle(it as ImageView)
+                    currentRotationY = 0f
+                    loadModelFromAsset("cubeRotated.glb", defaultMaterialInstance)
+                }
+            }
+            binding.modelBtn3?.setOnClickListener {
+                if(selectedModelOption != it){
+                    animateModelToggle(it as ImageView)
+                    currentRotationY = 0f
+                    loadModelFromAsset("planeRotated.glb", defaultMaterialInstance)
+                }
+            }
+//        binding.modelBtn4?.setOnClickListener {
+//            animateModelToggle(it as ImageView)
+//        }
+
+
+
+
+            albedoBitmap.recycle()
+            normalBitmap.recycle()
         }catch (e: Exception) {
             Log.e("MainActivity", "Error setting up model and materials: ${e.message}")
             e.printStackTrace()
+            Toast.makeText(requireContext(), "Error setting up model and materials: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -501,8 +495,45 @@ class PreviewFragment: Fragment() {
     }
 
 
-    /** ============================ Toggle Maps and 3D Render  ============================ **/
-    // Animate toggle button
+    /** ============================ Toggle Animations ============================ **/
+    private fun animateModelToggle(target: ImageView, initial: Boolean = false){
+        val highlight = binding.modelHighlightView!!
+        val toX = target.x
+
+        if (!initial) {
+            // Animate movement
+            highlight.animate().x(toX).setDuration(200).start()
+        }else{
+            // First time setup, default sphere option selected
+            selectedModelOption = binding.modelBtn1
+            highlight.x = toX
+            highlight.requestLayout()
+        }
+
+        // Update drawable tint color
+        val selectedColor = ContextCompat.getColor(requireContext(), R.color.dark_blue_a20)
+        val unselectedColor = ContextCompat.getColor(requireContext(), R.color.grey)
+
+        val targetDrawable = target.drawable?.mutate() ?: return
+        val currentDrawable = selectedModelOption?.drawable?.mutate() ?: return
+        animateDrawableTint(targetDrawable, unselectedColor, selectedColor)
+        animateDrawableTint(currentDrawable, selectedColor, unselectedColor)
+
+        selectedModelOption = target
+    }
+
+
+    fun animateDrawableTint(drawable: Drawable, fromColor: Int, toColor: Int) {
+        val colorAnimator = ValueAnimator.ofObject(ArgbEvaluator(), fromColor, toColor)
+        colorAnimator.duration = 200
+        colorAnimator.addUpdateListener { animator ->
+            val animatedColor = animator.animatedValue as Int
+            drawable.setTint(animatedColor)
+        }
+        colorAnimator.start()
+    }
+
+    // Animate Toggle Button
     private fun animateToggle(target: View, initial: Boolean = false) {
         selectedView = target
 
@@ -526,6 +557,7 @@ class PreviewFragment: Fragment() {
             widthAnimator.start()
         }else {
             // First time setup, default mapsButton selected
+            selectedView = binding.mapsButton!!
             highlight.x = toX
             highlight.layoutParams.width = toWidth
             highlight.requestLayout()
@@ -596,11 +628,49 @@ class PreviewFragment: Fragment() {
 
 
     /** ============================ 3D rendering  ============================ **/
-    fun Bitmap.rotateBy180(): Bitmap {
-        val matrix = Matrix()
-        matrix.postRotate(180f)
-        return Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
+    fun loadModelFromAsset(glbAssetName: String, defaultMaterialInstance: MaterialInstance) {
+        // Destroy the current model
+        modelViewer.destroyModel()
+
+        // Load the new GLB
+        val byteArray =  requireContext().assets.open(glbAssetName).readBytes()
+        val buffer = ByteBuffer.allocateDirect(byteArray.size)
+        buffer.put(byteArray)
+        buffer.flip()
+
+        // Load the model
+        modelViewer.loadModelGlb(buffer)
+        modelViewer.transformToUnitCube() // scale
+
+        // Save the unit cube transform (contains scale)
+        val transformManager = engine.transformManager
+        val rootInstance = transformManager.getInstance(modelViewer.asset!!.root)
+        transformManager.getTransform(rootInstance, originalTransform)
+
+        // Apply extra 1.3× scale right after unitizing
+        val scaleMatrix = float4x4Scale(modelScale)
+        val enlargedTransform = multiplyMatrices(scaleMatrix, originalTransform)
+        transformManager.setTransform(rootInstance, enlargedTransform)
+
+        // Apply existing material instance to the new model
+        modelViewer.asset?.let { asset ->
+            val renderableManager = engine.renderableManager
+            val entities = asset.entities
+
+            for (entity in entities) {
+                if (!renderableManager.hasComponent(entity)) continue
+
+                val renderableInstance = renderableManager.getInstance(entity)
+                val primitiveCount = renderableManager.getPrimitiveCount(renderableInstance)
+
+                for (i in 0 until primitiveCount) {
+                    renderableManager.setMaterialInstanceAt(renderableInstance, i, defaultMaterialInstance)
+                }
+            }
+        }
     }
+
+
     // Texture creation for albedo, normal, and height maps
     private fun createTextureFromBitmap(bitmap: Bitmap, isSRGB: Boolean): Texture {
         val maxDimension = max(bitmap.width, bitmap.height)
